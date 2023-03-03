@@ -19,11 +19,11 @@
     "sourceType": "module"
   },
   "plugins": [
-    "import",
     "react",
     "react-hooks",
     "@typescript-eslint",
-    "prettier"
+    "prettier",
+    "import"
   ],
   "settings": {
     "import/resolver": {
