@@ -8,6 +8,7 @@
     "prepare": "husky install"
   },
   "dependencies": {
+    "@effector/reflect": "^8.2.0",
     "@emotion/react": "^11.10.6",
     "@emotion/styled": "^11.10.6",
     "@farfetched/core": "^0.7.2",

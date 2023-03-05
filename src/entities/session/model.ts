@@ -1,5 +1,6 @@
 import {
   chainRoute,
+  redirect,
   RouteInstance,
   RouteParams,
   RouteParamsAndQuery,
@@ -14,7 +15,15 @@ import {
 } from 'effector';
 import Cookies from 'js-cookie';
 
+import { unAuthorized } from '@/shared/api/api-instance';
 import { routes } from '@/shared/config/routing';
+
+export function checkForUnauthorizedRequests() {
+  redirect({
+    clock: unAuthorized,
+    route: routes.login,
+  });
+}
 
 export const logout = createEvent();
 const tokenReceived = createEvent<string>();

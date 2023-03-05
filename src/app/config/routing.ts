@@ -13,7 +13,8 @@ const routesMap = [
 
 export const router = createHistoryRouter({ routes: routesMap });
 
-export const RoutesView = createRoutesView({ routes: routesMap });
+const privateViewRoutes = routesMap.filter((route) => route.path !== '/login');
+export const RoutesView = createRoutesView({ routes: privateViewRoutes });
 
 redirect({
   clock: [router.routeNotFound, routes.root.opened],

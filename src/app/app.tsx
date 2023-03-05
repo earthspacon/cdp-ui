@@ -3,7 +3,10 @@ import { RouterProvider } from 'atomic-router-react';
 import { createEvent } from 'effector';
 import { Suspense } from 'react';
 
-import { startSessionCheck } from '@/entities/session';
+import {
+  checkForUnauthorizedRequests,
+  startSessionCheck,
+} from '@/entities/session';
 
 import { Centered } from '@/shared/ui/centered';
 
@@ -12,6 +15,7 @@ import { router, RoutesView } from './config/routing';
 const appStarted = createEvent();
 
 startSessionCheck({ appStarted });
+checkForUnauthorizedRequests();
 
 appStarted();
 
