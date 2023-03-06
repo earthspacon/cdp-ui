@@ -6,13 +6,18 @@ import { persist } from 'effector-storage';
 import {
   API_INSTANCE,
   AuthTokens,
-  requestForAuthTokens,
   sendAuthTokensFx,
 } from '@/shared/config/api-instance';
 import { routes } from '@/shared/config/routing';
 import { EffectorStorageCookieAdapter } from '@/shared/lib/effector-storage-cookie-adapter';
 
 import { AccessToken, accessTokenContract } from './api/contracts';
+
+declare module 'axios' {
+  export interface AxiosRequestConfig {
+    _retry?: boolean;
+  }
+}
 
 const $authTokens = createStore(new AuthTokens());
 persist({
@@ -40,22 +45,16 @@ sample({
 
 const getAuthTokensFx = attach({
   source: $authTokens,
-  effect: sendAuthTokensFx,
-  mapParams: () => ({}),
+  effect: (authTokens) => authTokens,
 });
-
-sample({
-  clock: requestForAuthTokens,
-  source: $authTokens,
-  target: sendAuthTokensFx,
-});
+sendAuthTokensFx.use(() => getAuthTokensFx());
 
 const getRefreshTokenMutation = createMutation({
   effect: attach({
     source: $authTokens,
     async effect({ refreshToken }) {
       const { data } = await API_INSTANCE.post<AccessToken>(
-        '/management-service/shop/admin/refresh-token',
+        '/management-service/shop/admin/refresh-tocken',
         { refreshToken },
       );
       return data;
@@ -65,33 +64,29 @@ const getRefreshTokenMutation = createMutation({
 });
 export const $isAuthChecking = getRefreshTokenMutation.$pending;
 
-type AppStarted = { appStarted: Event<void> };
+sample({
+  clock: getRefreshTokenMutation.finished.success,
+  fn: ({ result: { accessToken } }) => ({
+    accessToken,
+    refreshToken: accessToken,
+  }),
+  target: $authTokens,
+});
 
-export function startSessionCheck({ appStarted }: AppStarted) {
-  sample({ clock: appStarted, target: getRefreshTokenMutation.start });
+sample({
+  clock: getRefreshTokenMutation.finished.failure,
+  target: logout,
+});
 
-  sample({
-    clock: getRefreshTokenMutation.finished.success,
-    fn: ({ result: { accessToken } }) => ({
-      accessToken,
-      refreshToken: accessToken,
-    }),
-    target: $authTokens,
-  });
-
-  sample({
-    clock: getRefreshTokenMutation.finished.failure,
-    filter: ({ error }) => {
-      if (error instanceof AxiosError) {
-        return error.response?.status === 401;
-      }
-      return false;
-    },
-    target: logout,
-  });
+export function checkSession({ event }: { event: Event<void> }) {
+  sample({ clock: event, target: getRefreshTokenMutation.start });
 }
 
-export function setApiInstanceInterceptors({ appStarted }: AppStarted) {
+export function setApiInstanceInterceptors({
+  appStarted,
+}: {
+  appStarted: Event<void>;
+}) {
   const setupInterceptorsFx = attach({
     source: $authTokens,
     effect: ({ accessToken }) => {
@@ -104,49 +99,23 @@ export function setApiInstanceInterceptors({ appStarted }: AppStarted) {
 
       API_INSTANCE.interceptors.response.use(
         (response) => response,
-        async (error) => {
+        async (error: AxiosError) => {
+          console.log({ error });
           const originalConfig = error.config;
+          if (!originalConfig) return Promise.reject(error);
 
-          if (
-            !['sign-in', 'sign-up'].includes(originalConfig.url) &&
-            error.response
-          ) {
+          if (!originalConfig?.url?.includes('sign-in') && error.response) {
             if (error.response.status === 401 && !originalConfig._retry) {
               originalConfig._retry = true;
 
-              try {
-                const rs = await instance.post('/auth/refreshtoken', {
-                  refreshToken: TokenService.getLocalRefreshToken(),
-                });
-
-                const { accessToken } = rs.data;
-                TokenService.updateLocalAccessToken(accessToken);
-
-                return instance(originalConfig);
-              } catch (_error) {
-                return Promise.reject(_error);
-              }
+              getRefreshTokenMutation.start();
+              return API_INSTANCE(originalConfig);
             }
           }
         },
       );
     },
   });
+
+  sample({ clock: appStarted, target: setupInterceptorsFx });
 }
-
-// export function getAuthorizedRoute<Params extends RouteParams>(
-//   route: RouteInstance<Params>,
-// ) {
-//   const sessionCheckStarted = createEvent<RouteParamsAndQuery<Params>>();
-
-//   const alreadyAuthorized = sample({
-//     clock: sessionCheckStarted,
-//     filter: $isAuthorized,
-//   });
-
-//   return chainRoute({
-//     route,
-//     beforeOpen: sessionCheckStarted,
-//     openOn: alreadyAuthorized,
-//   });
-// }

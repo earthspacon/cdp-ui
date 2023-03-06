@@ -6,7 +6,7 @@ export const EffectorStorageCookieAdapter: StorageAdapter = <State>(
 ) => {
   return {
     get() {
-      const value: string | undefined = Cookies.get(key);
+      const value = Cookies.get(key);
       return value === undefined ? undefined : JSON.parse(value);
     },
     set(value: State) {

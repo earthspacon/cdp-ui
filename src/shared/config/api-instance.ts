@@ -18,11 +18,9 @@ export class AuthTokens {
 }
 
 export const checkAuthorized = createEvent();
-export const requestForAuthTokens = createEvent();
 export const sendAuthTokensFx = createEffect<void, AuthTokens>();
 
 API_INSTANCE.interceptors.request.use(async (config) => {
-  requestForAuthTokens();
   const { accessToken } = await sendAuthTokensFx();
   if (accessToken) {
     config.headers.Authorization = `Bearer ${accessToken}`;
@@ -58,5 +56,7 @@ API_INSTANCE.interceptors.response.use(
         // }
       }
     }
+
+    return Promise.reject(error);
   },
 );
