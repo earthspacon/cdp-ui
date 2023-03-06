@@ -37,6 +37,7 @@
     "react/react-in-jsx-scope": "off",
     "@typescript-eslint/no-empty-function": "off",
     "react/display-name": "off",
-    "import/no-default-export": "error"
+    "import/no-default-export": "error",
+    "@typescript-eslint/no-non-null-assertion": "off"
   }
 }

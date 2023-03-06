@@ -13,8 +13,12 @@ const routesMap = [
 
 export const router = createHistoryRouter({ routes: routesMap });
 
-const privateViewRoutes = routesMap.filter((route) => route.path !== '/login');
-export const RoutesView = createRoutesView({ routes: privateViewRoutes });
+const privateViewRoutes = routesMap.filter(
+  (route) => !['/login', '/sign-up'].includes(route.path),
+);
+export const PrivateRoutesView = createRoutesView({
+  routes: privateViewRoutes,
+});
 
 redirect({
   clock: [router.routeNotFound, routes.root.opened],
