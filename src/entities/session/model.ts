@@ -1,17 +1,20 @@
-import { createMutation } from '@farfetched/core';
 import { AxiosError } from 'axios';
-import { attach, createEvent, createStore, Event, sample } from 'effector';
-import { persist } from 'effector-storage';
-
 import {
-  API_INSTANCE,
-  AuthTokens,
-  sendAuthTokensFx,
-} from '@/shared/config/api-instance';
+  attach,
+  createEffect,
+  createEvent,
+  createStore,
+  Event,
+  sample,
+} from 'effector';
+import { persist } from 'effector-storage';
+import Cookies from 'js-cookie';
+
+import { API_INSTANCE } from '@/shared/config/api-instance';
 import { routes } from '@/shared/config/routing';
 import { EffectorStorageCookieAdapter } from '@/shared/lib/effector-storage-cookie-adapter';
 
-import { AccessToken, accessTokenContract } from './api/contracts';
+import { AuthTokensSchema, getAccessTokenByRefreshTokenFx } from './api';
 
 declare module 'axios' {
   export interface AxiosRequestConfig {
@@ -19,11 +22,16 @@ declare module 'axios' {
   }
 }
 
+class AuthTokens {
+  accessToken = '';
+  refreshToken = '';
+}
+
 const $authTokens = createStore(new AuthTokens());
 persist({
   store: $authTokens,
-  key: 'authTokens',
   adapter: EffectorStorageCookieAdapter,
+  key: 'authTokens',
 });
 
 export const $isAuthorized = $authTokens.map(
@@ -43,43 +51,25 @@ sample({
   target: [$authTokens, routes.segments.open] as const,
 });
 
-const getAuthTokensFx = attach({
+const getRefreshTokenFx = attach({
   source: $authTokens,
-  effect: (authTokens) => authTokens,
+  effect: getAccessTokenByRefreshTokenFx,
 });
-sendAuthTokensFx.use(() => getAuthTokensFx());
-
-const getRefreshTokenMutation = createMutation({
-  effect: attach({
-    source: $authTokens,
-    async effect({ refreshToken }) {
-      const { data } = await API_INSTANCE.post<AccessToken>(
-        '/management-service/shop/admin/refresh-tocken',
-        { refreshToken },
-      );
-      return data;
-    },
-  }),
-  contract: accessTokenContract,
-});
-export const $isAuthChecking = getRefreshTokenMutation.$pending;
+export const $isAuthChecking = getRefreshTokenFx.pending;
 
 sample({
-  clock: getRefreshTokenMutation.finished.success,
-  fn: ({ result: { accessToken } }) => ({
-    accessToken,
-    refreshToken: accessToken,
-  }),
+  clock: getRefreshTokenFx.doneData,
+  fn: ({ accessToken }) => ({ accessToken, refreshToken: accessToken }),
   target: $authTokens,
 });
 
 sample({
-  clock: getRefreshTokenMutation.finished.failure,
+  clock: getRefreshTokenFx.fail,
   target: logout,
 });
 
 export function checkSession({ event }: { event: Event<void> }) {
-  sample({ clock: event, target: getRefreshTokenMutation.start });
+  sample({ clock: event, target: getRefreshTokenFx });
 }
 
 export function setApiInstanceInterceptors({
@@ -87,34 +77,37 @@ export function setApiInstanceInterceptors({
 }: {
   appStarted: Event<void>;
 }) {
-  const setupInterceptorsFx = attach({
-    source: $authTokens,
-    effect: ({ accessToken }) => {
-      API_INSTANCE.interceptors.request.use((config) => {
-        if (accessToken) {
-          config.headers.Authorization = `Bearer ${accessToken}`;
-        }
-        return config;
-      });
+  const setupInterceptorsFx = createEffect(() => {
+    API_INSTANCE.interceptors.request.use((config) => {
+      const parsedTokens = AuthTokensSchema.safeParse(
+        Cookies.get('authTokens'),
+      );
+      if (parsedTokens.success) {
+        config.headers.Authorization = `Bearer ${parsedTokens.data.accessToken}`;
+      }
+      return config;
+    });
 
-      API_INSTANCE.interceptors.response.use(
-        (response) => response,
-        async (error: AxiosError) => {
-          console.log({ error });
-          const originalConfig = error.config;
-          if (!originalConfig) return Promise.reject(error);
+    API_INSTANCE.interceptors.response.use(
+      (response) => response,
+      async (error: AxiosError) => {
+        const originalConfig = error.config;
+        if (!originalConfig) return Promise.reject(error);
 
-          if (!originalConfig?.url?.includes('sign-in') && error.response) {
-            if (error.response.status === 401 && !originalConfig._retry) {
-              originalConfig._retry = true;
+        if (!originalConfig?.url?.includes('sign-in') && error.response) {
+          if (error.response.status === 401 && !originalConfig._retry) {
+            originalConfig._retry = true;
 
-              getRefreshTokenMutation.start();
+            try {
+              await getRefreshTokenFx();
               return API_INSTANCE(originalConfig);
+            } catch (error) {
+              return Promise.reject(error);
             }
           }
-        },
-      );
-    },
+        }
+      },
+    );
   });
 
   sample({ clock: appStarted, target: setupInterceptorsFx });

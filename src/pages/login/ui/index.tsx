@@ -1,33 +1,56 @@
-import { Button, TextField } from '@mui/material';
+import { Button, TextField, Typography } from '@mui/material';
+import { Link } from 'atomic-router-react';
+import { useForm } from 'effector-forms';
 
+import { routes } from '@/shared/config/routing';
 import { styled } from '@/shared/config/stitches.config';
 import { Centered } from '@/shared/ui/centered';
 
+import { loginForm } from '../model';
+
 // eslint-disable-next-line import/no-default-export
 export default function Login() {
+  const { fields, submit, eachValid } = useForm(loginForm);
+
   return (
     <Centered>
-      <LoginWrapper>
+      <LoginWrapper onSubmit={() => submit()}>
         <InputsWrapper>
-          <TextField label="Email" />
-          <TextField label="Пароль" />
+          <TextField
+            label="Email"
+            value={fields.email.value}
+            onChange={(evt) => fields.email.onChange(evt.target.value)}
+            error={fields.email.hasError()}
+            helperText={fields.email.errorText()}
+          />
+          <TextField
+            label="Пароль"
+            value={fields.password.value}
+            onChange={(evt) => fields.password.onChange(evt.target.value)}
+            error={fields.password.hasError()}
+            helperText={fields.password.errorText()}
+          />
         </InputsWrapper>
 
         <BottomButtonsWrapper>
-          <Button variant="contained">Войти</Button>
-          <Button variant="contained">Зарегистрироваться</Button>
+          <Button variant="contained" sx={{ width: '100%' }} type="submit">
+            Войти
+          </Button>
+          <Typography>
+            <Link to={routes.signUp}>Зарегистрироваться</Link>
+          </Typography>
         </BottomButtonsWrapper>
       </LoginWrapper>
     </Centered>
   );
 }
 
-const LoginWrapper = styled('div', {
-  w: '30%',
+const LoginWrapper = styled('form', {
+  w: '100%',
+  maxW: '400px',
   d: 'flex',
   ai: 'center',
   jc: 'center',
-  p: '200px',
   fd: 'column',
   gap: '40px',
 });
@@ -42,6 +65,8 @@ const InputsWrapper = styled('div', {
 const BottomButtonsWrapper = styled('div', {
   w: '100%',
   d: 'flex',
-  fd: 'row',
-  jc: 'space-between',
+  fd: 'column',
+  gap: '20px',
+  ai: 'center',
+  jc: 'center',
 });
