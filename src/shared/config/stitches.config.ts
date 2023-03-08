@@ -1,17 +1,6 @@
 import type * as Stitches from '@stitches/react';
 import { createStitches } from '@stitches/react';
 
-function stitchCSSProp(...props: (keyof Stitches.CSSProperties)[]) {
-  return (value: Stitches.PropertyValue<(typeof props)[number]>) =>
-    props.reduce(
-      (acc, prop) => ({
-        ...acc,
-        [prop]: value,
-      }),
-      {} as Stitches.CSSProperties,
-    );
-}
-
 export const {
   styled,
   css,
@@ -55,3 +44,14 @@ export const {
 });
 
 export type StitchesCSS = Stitches.CSS<typeof config>;
+
+function stitchCSSProp(...props: (keyof Stitches.CSSProperties)[]) {
+  return (value: Stitches.PropertyValue<(typeof props)[number]>) =>
+    props.reduce(
+      (acc, prop) => ({
+        ...acc,
+        [prop]: value,
+      }),
+      {} as Stitches.CSSProperties,
+    );
+}

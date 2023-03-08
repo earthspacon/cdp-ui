@@ -35,10 +35,10 @@ export const loginForm = createForm({
   validateOn: ['submit', 'change', 'blur'],
 });
 
-type LoginParams = Exclude<
-  Parameters<typeof loginForm.formValidated>[0],
-  undefined
->;
+type LoginParams = {
+  email: string;
+  password: string;
+};
 
 const loginFx = createEffect(async (params: LoginParams) => {
   console.log({ params });

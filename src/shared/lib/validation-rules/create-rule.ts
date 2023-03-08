@@ -5,7 +5,7 @@ export function createRule<V>({
   schema,
   name,
 }: {
-  schema: z.Schema<V>;
+  schema: z.ZodType<V>;
   name: string;
 }): Rule<V> {
   return {
