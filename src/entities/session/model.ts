@@ -10,11 +10,12 @@ import {
 import { persist } from 'effector-storage';
 import Cookies from 'js-cookie';
 
+import { AuthTokensSchema } from '@/shared/api/auth-tokens';
 import { API_INSTANCE } from '@/shared/config/api-instance';
 import { routes } from '@/shared/config/routing';
 import { EffectorStorageCookieAdapter } from '@/shared/lib/effector-storage-cookie-adapter';
 
-import { AuthTokensSchema, getAccessTokenByRefreshTokenFx } from './api';
+import { getAccessTokenByRefreshTokenFx } from './api';
 
 declare module 'axios' {
   export interface AxiosRequestConfig {

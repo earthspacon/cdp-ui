@@ -8,22 +8,19 @@ import { Suspense } from 'react';
 
 import { LoginPage } from '@/pages/login';
 
-import {
-  AuthCheck,
-  checkSession,
-  setApiInstanceInterceptors,
-} from '@/entities/session';
+import { AuthCheck, sessionModel } from '@/entities/session';
 
 import { routes } from '@/shared/config/routing';
 import { styled } from '@/shared/config/stitches.config';
 import { AppLoading } from '@/shared/ui/app-loading';
 
 import { PrivateRoutesView, router } from './config/routing';
+import './styles.css';
 
 const appStarted = createEvent();
 
-setApiInstanceInterceptors({ appStarted });
-checkSession({ event: appStarted });
+sessionModel.setApiInstanceInterceptors({ appStarted });
+sessionModel.checkSession({ event: appStarted });
 
 appStarted();
 
