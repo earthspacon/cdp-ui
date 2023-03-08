@@ -13,6 +13,7 @@
     "@emotion/styled": "^11.10.6",
     "@farfetched/core": "^0.7.2",
     "@farfetched/zod": "^0.7.2",
+    "@fontsource/roboto": "^4.5.8",
     "@mui/material": "^5.11.11",
     "@stitches/react": "^1.2.8",
     "atomic-router": "^0.8.0",

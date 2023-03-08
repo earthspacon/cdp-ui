@@ -1,4 +1,4 @@
-import { Button, TextField, Typography } from '@mui/material';
+import { Button, CircularProgress, TextField, Typography } from '@mui/material';
 import { Link } from 'atomic-router-react';
 import { useForm } from 'effector-forms';
 
@@ -9,17 +9,23 @@ import { Centered } from '@/shared/ui/centered';
 import { loginForm } from '../model';
 
 // eslint-disable-next-line import/no-default-export
-export default function Login() {
+export default function LoginPage() {
   const { fields, submit, eachValid } = useForm(loginForm);
+
+  const onSubmit = (event: React.FormEvent) => {
+    event.preventDefault();
+    submit();
+  };
 
   return (
     <Centered>
-      <LoginWrapper onSubmit={() => submit()}>
+      <LoginWrapper onSubmit={onSubmit}>
         <InputsWrapper>
           <TextField
             label="Email"
             value={fields.email.value}
             onChange={(evt) => fields.email.onChange(evt.target.value)}
+            onBlur={() => fields.email.onBlur()}
             error={fields.email.hasError()}
             helperText={fields.email.errorText()}
           />
@@ -27,13 +33,21 @@ export default function Login() {
             label="Пароль"
             value={fields.password.value}
             onChange={(evt) => fields.password.onChange(evt.target.value)}
+            onBlur={() => fields.password.onBlur()}
             error={fields.password.hasError()}
             helperText={fields.password.errorText()}
           />
         </InputsWrapper>
 
         <BottomButtonsWrapper>
-          <Button variant="contained" sx={{ width: '100%' }} type="submit">
+          <Button
+            variant="contained"
+            size="large"
+            sx={{ width: '100%' }}
+            type="submit"
+            disabled={!eachValid}
+            startIcon={<CircularProgress size={22} />}
+          >
             Войти
           </Button>
           <Typography>

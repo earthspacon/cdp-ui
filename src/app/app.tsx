@@ -1,4 +1,7 @@
-import { CircularProgress } from '@mui/material';
+import '@fontsource/roboto/300.css';
+import '@fontsource/roboto/400.css';
+import '@fontsource/roboto/500.css';
+import '@fontsource/roboto/700.css';
 import { Route, RouterProvider } from 'atomic-router-react';
 import { createEvent } from 'effector';
 import { Suspense } from 'react';
@@ -13,27 +16,21 @@ import {
 
 import { routes } from '@/shared/config/routing';
 import { styled } from '@/shared/config/stitches.config';
-import { Centered } from '@/shared/ui/centered';
+import { AppLoading } from '@/shared/ui/app-loading';
 
 import { PrivateRoutesView, router } from './config/routing';
 
 const appStarted = createEvent();
 
-checkSession({ event: appStarted });
 setApiInstanceInterceptors({ appStarted });
+checkSession({ event: appStarted });
 
 appStarted();
 
 export function App() {
   return (
     <AppWrapper>
-      <Suspense
-        fallback={
-          <Centered>
-            <CircularProgress size={30} />
-          </Centered>
-        }
-      >
+      <Suspense fallback={<AppLoading />}>
         <RouterProvider router={router}>
           <Route route={routes.login} view={LoginPage} />
           <Route route={routes.signUp} view={() => null} />

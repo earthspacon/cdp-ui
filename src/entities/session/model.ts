@@ -22,6 +22,8 @@ declare module 'axios' {
   }
 }
 
+const AUTH_TOKENS_COOKIE_KEY = 'AUTH_TOKENS';
+
 class AuthTokens {
   accessToken = '';
   refreshToken = '';
@@ -31,7 +33,7 @@ const $authTokens = createStore(new AuthTokens());
 persist({
   store: $authTokens,
   adapter: EffectorStorageCookieAdapter,
-  key: 'authTokens',
+  key: AUTH_TOKENS_COOKIE_KEY,
 });
 
 export const $isAuthorized = $authTokens.map(
@@ -80,7 +82,7 @@ export function setApiInstanceInterceptors({
   const setupInterceptorsFx = createEffect(() => {
     API_INSTANCE.interceptors.request.use((config) => {
       const parsedTokens = AuthTokensSchema.safeParse(
-        Cookies.get('authTokens'),
+        JSON.parse(Cookies.get(AUTH_TOKENS_COOKIE_KEY) ?? '{}'),
       );
       if (parsedTokens.success) {
         config.headers.Authorization = `Bearer ${parsedTokens.data.accessToken}`;

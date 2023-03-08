@@ -1,4 +1,6 @@
+import { createEffect, sample } from 'effector';
 import { createForm } from 'effector-forms';
+import { debounce } from 'patronum';
 import { z } from 'zod';
 
 import { createRule } from '@/shared/lib/validation-rules/create-rule';
@@ -30,5 +32,22 @@ export const loginForm = createForm({
       ],
     },
   },
-  validateOn: ['submit', 'change'],
+  validateOn: ['submit', 'change', 'blur'],
+});
+
+type LoginParams = Exclude<
+  Parameters<typeof loginForm.formValidated>[0],
+  undefined
+>;
+
+const loginFx = createEffect(async (params: LoginParams) => {
+  console.log({ params });
+});
+export const $loginFxPending = loginFx.pending;
+
+const debouncedLogin = debounce({ source: loginFx, timeout: 3000 });
+
+sample({
+  clock: loginForm.formValidated,
+  target: debouncedLogin,
 });

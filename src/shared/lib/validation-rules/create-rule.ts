@@ -1,11 +1,11 @@
 import { Rule } from 'effector-forms';
 import { z } from 'zod';
 
-export function createRule<V, T>({
+export function createRule<V>({
   schema,
   name,
 }: {
-  schema: z.Schema<T>;
+  schema: z.Schema<V>;
   name: string;
 }): Rule<V> {
   return {
@@ -21,7 +21,7 @@ export function createRule<V, T>({
         return {
           isValid: false,
           value: value,
-          errorText: parsedValue.error.message,
+          errorText: parsedValue.error.issues[0].message,
         };
       }
     },
