@@ -7,6 +7,7 @@ import { createEvent } from 'effector';
 import { Suspense } from 'react';
 
 import { LoginPage } from '@/pages/login';
+import { SignUpPage } from '@/pages/sign-up';
 
 import { AuthCheck, sessionModel } from '@/entities/session';
 
@@ -30,7 +31,7 @@ export function App() {
       <Suspense fallback={<AppLoading />}>
         <RouterProvider router={router}>
           <Route route={routes.login} view={LoginPage} />
-          <Route route={routes.signUp} view={() => null} />
+          <Route route={routes.signUp} view={SignUpPage} />
 
           <AuthCheck>
             <PrivateRoutesView />

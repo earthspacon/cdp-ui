@@ -2,11 +2,26 @@ import { createHistoryRouter, redirect } from 'atomic-router';
 import { createRoutesView } from 'atomic-router-react';
 import { createBrowserHistory } from 'history';
 
+import { IntegrationPage } from '@/pages/integration';
+
+import { MainDrawer } from '@/widgets/main-drawer';
+
 import { routes } from '@/shared/config/routing';
 
 const routesMap = [
   { route: routes.root, path: '/', view: () => null },
-  { route: routes.segments, path: '/segments', view: () => null },
+  {
+    route: routes.segments,
+    path: '/segments',
+    view: () => null,
+    layout: MainDrawer,
+  },
+  {
+    route: routes.integration,
+    path: '/integration',
+    view: IntegrationPage,
+    layout: MainDrawer,
+  },
   { route: routes.login, path: '/login', view: () => null },
   { route: routes.signUp, path: '/sign-up', view: () => null },
 ];
