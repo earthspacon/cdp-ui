@@ -22,6 +22,18 @@ const routesMap = [
     view: IntegrationPage,
     layout: MainDrawer,
   },
+  {
+    route: routes.mailingLists,
+    path: '/mailing-lists',
+    view: () => null,
+    layout: MainDrawer,
+  },
+  {
+    route: routes.settings,
+    path: '/settings',
+    view: () => null,
+    layout: MainDrawer,
+  },
   { route: routes.login, path: '/login', view: () => null },
   { route: routes.signUp, path: '/sign-up', view: () => null },
 ];

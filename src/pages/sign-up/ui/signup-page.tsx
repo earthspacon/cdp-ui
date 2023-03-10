@@ -1,8 +1,8 @@
 import { Button, CircularProgress, Typography } from '@mui/material';
+import { styled } from '@stitches/react';
 import { useForm } from 'effector-forms';
 import { useUnit } from 'effector-react';
 
-import { styled } from '@/shared/config/stitches.config';
 import { Centered } from '@/shared/ui/centered';
 import { FormInput } from '@/shared/ui/form-control/form-input';
 
@@ -69,27 +69,27 @@ export default function SignUpPage() {
 }
 
 const LoginWrapper = styled('form', {
-  w: '100%',
-  maxW: '400px',
-  d: 'flex',
-  ai: 'center',
-  jc: 'center',
-  fd: 'column',
+  width: '100%',
+  maxWidth: '400px',
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  flexDirection: 'column',
   gap: '40px',
 });
 
 const InputsWrapper = styled('div', {
-  w: '100%',
-  d: 'flex',
+  width: '100%',
+  display: 'flex',
   gap: '20px',
-  fd: 'column',
+  flexDirection: 'column',
 });
 
 const BottomButtonsWrapper = styled('div', {
-  w: '100%',
-  d: 'flex',
-  fd: 'column',
+  width: '100%',
+  display: 'flex',
+  flexDirection: 'column',
   gap: '20px',
-  ai: 'center',
-  jc: 'center',
+  alignItems: 'center',
+  justifyContent: 'center',
 });

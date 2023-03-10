@@ -9,8 +9,9 @@ export function createLazyLoadingModule<ComponentProps>({
   module: Module<ComponentProps>;
 }) {
   const loadModuleFx = createEffect(
-    (importedModule: Module<ComponentProps>) => {
-      return importedModule();
+    async (importedModule: Module<ComponentProps>) => {
+      const module = await importedModule();
+      return module;
     },
   );
 

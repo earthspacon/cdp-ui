@@ -2,6 +2,7 @@ import '@fontsource/roboto/300.css';
 import '@fontsource/roboto/400.css';
 import '@fontsource/roboto/500.css';
 import '@fontsource/roboto/700.css';
+import { styled } from '@stitches/react';
 import { Route, RouterProvider } from 'atomic-router-react';
 import { createEvent } from 'effector';
 import { Suspense } from 'react';
@@ -12,7 +13,6 @@ import { SignUpPage } from '@/pages/sign-up';
 import { AuthCheck, sessionModel } from '@/entities/session';
 
 import { routes } from '@/shared/config/routing';
-import { styled } from '@/shared/config/stitches.config';
 import { AppLoading } from '@/shared/ui/app-loading';
 
 import { PrivateRoutesView, router } from './config/routing';
@@ -43,6 +43,6 @@ export function App() {
 }
 
 const AppWrapper = styled('div', {
-  w: '100vw',
-  h: '100vh',
+  width: '100vw',
+  height: '100vh',
 });

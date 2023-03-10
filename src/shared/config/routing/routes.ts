@@ -5,6 +5,8 @@ export const routes = {
   notFound: createRoute(),
   login: createRoute(),
   signUp: createRoute(),
-  segments: createRoute(),
   integration: createRoute(),
+  segments: createRoute(),
+  mailingLists: createRoute(),
+  settings: createRoute(),
 };

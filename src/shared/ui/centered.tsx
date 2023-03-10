@@ -1,9 +1,9 @@
-import { styled } from '../config/stitches.config';
+import { styled } from '@stitches/react';
 
 export const Centered = styled('div', {
-  d: 'flex',
-  jc: 'center',
-  ai: 'center',
+  display: 'flex',
+  justifyContent: 'center',
+  alignItems: 'center',
   height: '100%',
   width: '100%',
 });
