@@ -13,14 +13,10 @@ export function createRule<V>({
     validator: (value) => {
       const parsedValue = schema.safeParse(value);
       if (parsedValue.success) {
-        return {
-          isValid: true,
-          value: parsedValue.data,
-        };
+        return { isValid: true };
       } else {
         return {
           isValid: false,
-          value: value,
           errorText: parsedValue.error.issues[0].message,
         };
       }
