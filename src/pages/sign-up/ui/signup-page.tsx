@@ -1,10 +1,11 @@
-import { Button, CircularProgress, Typography } from '@mui/material';
+import { Typography } from '@mui/material';
 import { styled } from '@stitches/react';
 import { useForm } from 'effector-forms';
 import { useUnit } from 'effector-react';
 
 import { Centered } from '@/shared/ui/centered';
 import { FormInput } from '@/shared/ui/form-control/form-input';
+import { LoadingButton } from '@/shared/ui/loading-button';
 
 import { signupMutation } from '../api';
 import { signupForm } from '../model/model';
@@ -48,20 +49,16 @@ export default function SignUpPage() {
         </InputsWrapper>
 
         <BottomButtonsWrapper>
-          <Button
+          <LoadingButton
             variant="contained"
             size="large"
             sx={{ width: '100%' }}
             type="submit"
             disabled={!eachValid || isSigningUp}
-            startIcon={
-              isSigningUp ? (
-                <CircularProgress sx={{ mr: '10px' }} size={22} />
-              ) : null
-            }
+            loading={isSigningUp}
           >
             Зарегистрироваться
-          </Button>
+          </LoadingButton>
         </BottomButtonsWrapper>
       </LoginWrapper>
     </Centered>

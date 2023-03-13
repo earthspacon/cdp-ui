@@ -1,4 +1,4 @@
-import { Button, CircularProgress, Typography } from '@mui/material';
+import { Typography } from '@mui/material';
 import { styled } from '@stitches/react';
 import { Link } from 'atomic-router-react';
 import { useForm } from 'effector-forms';
@@ -7,6 +7,7 @@ import { useUnit } from 'effector-react';
 import { routes } from '@/shared/config/routing';
 import { Centered } from '@/shared/ui/centered';
 import { FormInput } from '@/shared/ui/form-control/form-input';
+import { LoadingButton } from '@/shared/ui/loading-button';
 
 import { loginMutation } from '../api';
 import { $loginErrors, loginForm } from '../model/model';
@@ -41,20 +42,16 @@ export default function LoginPage() {
         </InputsWrapper>
 
         <BottomButtonsWrapper>
-          <Button
+          <LoadingButton
             variant="contained"
             size="large"
             sx={{ width: '100%' }}
             type="submit"
             disabled={!eachValid || isLoggingIn}
-            startIcon={
-              isLoggingIn ? (
-                <CircularProgress sx={{ mr: '10px' }} size={22} />
-              ) : null
-            }
+            loading={isLoggingIn}
           >
             Войти
-          </Button>
+          </LoadingButton>
 
           <Typography>
             <Link to={routes.signUp}>Зарегистрироваться</Link>

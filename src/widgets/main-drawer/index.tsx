@@ -1,5 +1,4 @@
 import {
-  Box,
   Divider,
   Drawer,
   List,
@@ -8,6 +7,7 @@ import {
   ListItemText,
   Toolbar,
 } from '@mui/material';
+import { styled } from '@stitches/react';
 import { Store } from 'effector';
 import { useUnit } from 'effector-react';
 
@@ -16,22 +16,10 @@ import { NoStyleLink } from '@/shared/ui/no-style-link';
 
 import { mainDrawerItems } from './lib';
 
-const drawerWidth = 250;
-
 export function MainDrawer({ children }: ChildrenProp) {
   return (
-    <Box sx={{ display: 'flex' }}>
-      <Drawer
-        sx={{
-          width: drawerWidth,
-          flexShrink: 0,
-          '& .MuiDrawer-paper': {
-            width: drawerWidth,
-          },
-        }}
-        variant="permanent"
-        anchor="left"
-      >
+    <Wrapper>
+      <Drawer sx={drawerStyles} variant="permanent" anchor="left">
         <Toolbar />
         <Divider />
 
@@ -48,8 +36,8 @@ export function MainDrawer({ children }: ChildrenProp) {
         </List>
       </Drawer>
 
-      <Box sx={{ width: '100%', height: '100%', p: '30px' }}>{children}</Box>
-    </Box>
+      <Body>{children}</Body>
+    </Wrapper>
   );
 }
 
@@ -61,3 +49,22 @@ function ListItemBtn({ isRouteOpened, children }: ListItemBtnProps) {
   const selected = useUnit(isRouteOpened);
   return <ListItemButton selected={selected}>{children}</ListItemButton>;
 }
+
+const Wrapper = styled('div', {
+  display: 'flex',
+});
+
+const drawerWidth = 250;
+const drawerStyles = {
+  width: drawerWidth,
+  flexShrink: 0,
+  '& .MuiDrawer-paper': {
+    width: drawerWidth,
+  },
+};
+
+const Body = styled('div', {
+  width: '100%',
+  height: '100%',
+  padding: '30px',
+});

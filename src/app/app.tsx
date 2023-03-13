@@ -5,6 +5,7 @@ import '@fontsource/roboto/700.css';
 import { styled } from '@stitches/react';
 import { Route, RouterProvider } from 'atomic-router-react';
 import { createEvent } from 'effector';
+import { SnackbarProvider } from 'notistack';
 import { Suspense } from 'react';
 
 import { LoginPage } from '@/pages/login';
@@ -28,16 +29,18 @@ appStarted();
 export function App() {
   return (
     <AppWrapper>
-      <Suspense fallback={<AppLoading />}>
-        <RouterProvider router={router}>
-          <Route route={routes.login} view={LoginPage} />
-          <Route route={routes.signUp} view={SignUpPage} />
+      <StyledSnackbarProvider>
+        <Suspense fallback={<AppLoading />}>
+          <RouterProvider router={router}>
+            <Route route={routes.login} view={LoginPage} />
+            <Route route={routes.signUp} view={SignUpPage} />
 
-          <AuthCheck>
-            <PrivateRoutesView />
-          </AuthCheck>
-        </RouterProvider>
-      </Suspense>
+            <AuthCheck>
+              <PrivateRoutesView />
+            </AuthCheck>
+          </RouterProvider>
+        </Suspense>
+      </StyledSnackbarProvider>
     </AppWrapper>
   );
 }
@@ -45,4 +48,8 @@ export function App() {
 const AppWrapper = styled('div', {
   width: '100vw',
   height: '100vh',
+});
+
+const StyledSnackbarProvider = styled(SnackbarProvider, {
+  fontFamily: 'Roboto',
 });

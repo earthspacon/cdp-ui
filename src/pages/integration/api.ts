@@ -21,12 +21,12 @@ export type ApiCatalogHistory = z.infer<typeof CatalogHistorySchema>;
 export type CatalogHistoryStatus = ApiCatalogHistory['history'][0]['status'];
 
 type GetCatalogHistoryParams = {
-  page?: number;
-  size?: number;
+  page: number;
+  size: number;
 };
 
 export const catalogHistoryQuery = createQuery({
-  effect: createEffect(async (params: GetCatalogHistoryParams) => {
+  effect: createEffect(async (params?: GetCatalogHistoryParams) => {
     const response = await API_INSTANCE.get<ApiCatalogHistory>(
       '/import-service/catalog/history',
       { params },
@@ -40,14 +40,21 @@ export const uploadCatalogMutation = createMutation({
   handler: async (file: File) => {
     const formData = new FormData();
     formData.append('file', file);
-    await API_INSTANCE.post(
-      '/import-service/catalog',
-      formData,
-      // {
-      //   headers: {
-      //     'Content-Type': 'multipart/form-data',
-      //   },
-      // },
-    );
+
+    await API_INSTANCE.post('/import-service/catalog/upload-file', formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+    });
   },
+});
+
+export const getApiTokenQuery = createQuery({
+  effect: createEffect(async () => {
+    const response = await API_INSTANCE.get<{ data: string }>(
+      '/management-service/shop/admin/api-token',
+    );
+    return response.data.data;
+  }),
+  contract: zodContract(z.string()),
 });
