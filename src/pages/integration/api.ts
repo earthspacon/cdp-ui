@@ -41,13 +41,20 @@ export const uploadCatalogMutation = createMutation({
     const formData = new FormData();
     formData.append('file', file);
 
-    await API_INSTANCE.post('/import-service/catalog/upload-file', formData, {
-      headers: {
-        'Content-Type': 'multipart/form-data',
+    const response = await API_INSTANCE.post(
+      '/import-service/catalog/upload-file',
+      formData,
+      {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
       },
-    });
+    );
+    return response.data;
   },
 });
+
+const apiTokenContract = zodContract(z.string());
 
 export const getApiTokenQuery = createQuery({
   effect: createEffect(async () => {
@@ -56,5 +63,15 @@ export const getApiTokenQuery = createQuery({
     );
     return response.data.data;
   }),
-  contract: zodContract(z.string()),
+  contract: apiTokenContract,
+});
+
+export const generateApiTokenMutation = createMutation({
+  effect: createEffect(async () => {
+    const response = await API_INSTANCE.post<{ data: string }>(
+      '/management-service/shop/admin/api-token',
+    );
+    return response.data.data;
+  }),
+  contract: apiTokenContract,
 });

@@ -1,40 +1,56 @@
-import { Button, TextField, Typography } from '@mui/material';
-import { DataGrid, gridClasses, GridColDef } from '@mui/x-data-grid';
-import { styled } from '@stitches/react';
+import { reflect, variant } from '@effector/reflect';
+import { Button, CircularProgress, TextField, Typography } from '@mui/material';
+import { DataGrid, GridColDef } from '@mui/x-data-grid';
 import { useUnit } from 'effector-react';
 
 import { Centered } from '@/shared/ui/centered';
 import { LoadingButton } from '@/shared/ui/loading-button';
+import { NoData } from '@/shared/ui/no-data';
 
-import { catalogHistoryQuery, uploadCatalogMutation } from '../api';
+import * as styles from './styles';
+import {
+  catalogHistoryQuery,
+  generateApiTokenMutation,
+  getApiTokenQuery,
+  uploadCatalogMutation,
+} from '../api';
 import '../model/model';
 import {
   $apiToken,
   $catalogHistory,
+  $fileInputValue,
+  $noApiToken,
   $page,
   CatalogHistory,
+  copyTokenClicked,
   fileUploaded,
+  generateTokenClicked,
   PAGE_SIZE,
   pageChanged,
 } from '../model/model';
 
 // eslint-disable-next-line import/no-default-export
 export default function IntegrationPage() {
-  const { catalogHistory, apiToken, page, isCatalogLoading, uploadingCatalog } =
-    useUnit({
-      catalogHistory: $catalogHistory,
-      apiToken: $apiToken,
-      page: $page,
-      isCatalogLoading: catalogHistoryQuery.$pending,
-      uploadingCatalog: uploadCatalogMutation.$pending,
-    });
+  const {
+    catalogHistory,
+    page,
+    isCatalogLoading,
+    uploadingCatalog,
+    fileInputValue,
+  } = useUnit({
+    catalogHistory: $catalogHistory,
+    page: $page,
+    isCatalogLoading: catalogHistoryQuery.$pending,
+    uploadingCatalog: uploadCatalogMutation.$pending,
+    fileInputValue: $fileInputValue,
+  });
 
   return (
-    <Wrapper>
-      <TablePart>
+    <styles.Wrapper>
+      <styles.TablePart>
         <Typography variant="h6">Загрузка каталога</Typography>
 
-        <UploadWrapper>
+        <styles.UploadWrapper>
           <LoadingButton
             loading={uploadingCatalog}
             variant="contained"
@@ -45,15 +61,16 @@ export default function IntegrationPage() {
               hidden
               accept=".yml"
               type="file"
+              value={fileInputValue}
               onChange={(evt) => fileUploaded(evt.target.files)}
             />
           </LoadingButton>
-        </UploadWrapper>
+        </styles.UploadWrapper>
 
         <DataGrid
           rows={catalogHistory}
           columns={columns}
-          sx={dataGridStyles}
+          sx={styles.dataGridStyles}
           autoHeight
           disableColumnFilter
           disableColumnMenu
@@ -66,36 +83,20 @@ export default function IntegrationPage() {
           paginationModel={{ page: page, pageSize: PAGE_SIZE }}
           onPaginationModelChange={({ page }) => pageChanged(page)}
           slots={{
-            noRowsOverlay: CustomNoRowsOverlay,
-            noResultsOverlay: CustomNoRowsOverlay,
+            noRowsOverlay: NoData,
+            noResultsOverlay: NoData,
           }}
         />
-      </TablePart>
+      </styles.TablePart>
 
-      <ApiTokenPart>
+      <styles.ApiTokenPart>
         <Typography variant="h6">
           Создать API Token для загрузки пользователей и заказов
         </Typography>
 
-        <ApiTokenBody>
-          <TextField
-            fullWidth
-            InputProps={{ readOnly: true }}
-            value={apiToken}
-          />
-
-          <ApiTokenButtons>
-            <LoadingButton loading={false} variant="contained">
-              Создать новый API Token
-            </LoadingButton>
-
-            {apiToken.length > 0 && (
-              <Button variant="outlined">Скопировать</Button>
-            )}
-          </ApiTokenButtons>
-        </ApiTokenBody>
-      </ApiTokenPart>
-    </Wrapper>
+        <ApiTokenBody />
+      </styles.ApiTokenPart>
+    </styles.Wrapper>
   );
 }
 
@@ -118,59 +119,56 @@ const columns: GridColDef<CatalogHistory>[] = [
   },
 ];
 
-const dataGridStyles = {
-  [`& .${gridClasses.cell}`]: {
-    py: 2,
-  },
-};
+const ApiTokenBody = variant({
+  if: getApiTokenQuery.$pending,
+  then: () => (
+    <Centered>
+      <CircularProgress />
+    </Centered>
+  ),
+  else: reflect({
+    view: ({ generatingToken }: { generatingToken: boolean }) => (
+      <styles.ApiTokenBody>
+        <ApiTokenField />
 
-const Wrapper = styled('div', {
-  maxWidth: '80%',
-  display: 'flex',
-  flexDirection: 'column',
-  gap: '30px',
+        <styles.ApiTokenButtons>
+          <LoadingButton
+            loading={generatingToken}
+            variant="contained"
+            onClick={() => generateTokenClicked()}
+          >
+            Создать новый API Token
+          </LoadingButton>
+
+          <CopyButton />
+        </styles.ApiTokenButtons>
+      </styles.ApiTokenBody>
+    ),
+    bind: { generatingToken: generateApiTokenMutation.$pending },
+  }),
 });
 
-const TablePart = styled('div', {
-  display: 'flex',
-  flexDirection: 'column',
-  gap: '25px',
+const CopyButton = variant({
+  if: $noApiToken,
+  then: () => null,
+  else: () => (
+    <Button variant="outlined" onClick={() => copyTokenClicked()}>
+      Скопировать
+    </Button>
+  ),
 });
 
-const UploadWrapper = styled('div', {
-  display: 'flex',
-
-  label: {
-    padding: '8px 25px',
-  },
+const ApiTokenField = variant({
+  if: $noApiToken,
+  then: () => (
+    <Typography color="error" fontSize={18}>
+      Токен не найден
+    </Typography>
+  ),
+  else: reflect({
+    view: ({ apiToken }: { apiToken: string }) => (
+      <TextField fullWidth InputProps={{ readOnly: true }} value={apiToken} />
+    ),
+    bind: { apiToken: $apiToken },
+  }),
 });
-
-const ApiTokenPart = styled('div', {
-  display: 'flex',
-  flexDirection: 'column',
-  gap: '25px',
-});
-
-const ApiTokenBody = styled('div', {
-  width: '80%',
-  display: 'flex',
-  flexDirection: 'column',
-  gap: '25px',
-  alignItems: 'center',
-  justifyContent: 'center',
-});
-
-const ApiTokenButtons = styled('div', {
-  width: '100%',
-  display: 'flex',
-  flexDirection: 'row',
-  alignItems: 'center',
-  justifyContent: 'center',
-  gap: '25px',
-});
-
-const CustomNoRowsOverlay = () => (
-  <Centered>
-    <Typography color="GrayText">Нет данных</Typography>
-  </Centered>
-);

@@ -3,6 +3,7 @@ import { createRoutesView } from 'atomic-router-react';
 import { createBrowserHistory } from 'history';
 
 import { IntegrationPage } from '@/pages/integration';
+import { SettingsPage } from '@/pages/settings';
 
 import { MainDrawer } from '@/widgets/main-drawer';
 
@@ -31,7 +32,7 @@ const routesMap = [
   {
     route: routes.settings,
     path: '/settings',
-    view: () => null,
+    view: SettingsPage,
     layout: MainDrawer,
   },
   { route: routes.login, path: '/login', view: () => null },

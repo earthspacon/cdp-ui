@@ -11,7 +11,7 @@
     "@effector/reflect": "^8.2.0",
     "@emotion/react": "^11.10.6",
     "@emotion/styled": "^11.10.6",
-    "@farfetched/core": "^0.7.2",
+    "@farfetched/core": "^0.8.0",
     "@farfetched/zod": "^0.7.2",
     "@fontsource/roboto": "^4.5.8",
     "@mui/material": "^5.11.12",

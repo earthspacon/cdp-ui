@@ -1,13 +1,15 @@
-import { createEvent, createStore, sample } from 'effector';
-import { enqueueSnackbar } from 'notistack';
+import { cache, update } from '@farfetched/core';
+import { attach, createEvent, createStore, sample } from 'effector';
 import { spread } from 'patronum';
 
 import { routes } from '@/shared/config/routing';
+import { notifyError, notifySuccess } from '@/shared/lib/notification';
 
 import {
   ApiCatalogHistory,
   catalogHistoryQuery,
   CatalogHistoryStatus,
+  generateApiTokenMutation,
   getApiTokenQuery,
   uploadCatalogMutation,
 } from '../api';
@@ -21,17 +23,27 @@ export type CatalogHistory = ApiCatalogHistory['history'][0] & {
 
 export const $catalogHistory = createStore<CatalogHistory[]>([]);
 export const $apiToken = createStore('');
+export const $noApiToken = createStore(false);
 export const $page = createStore(0);
+export const $fileInputValue = createStore('');
 
 export const pageChanged = createEvent<number>();
 export const fileUploaded = createEvent<FileList | null>();
+export const generateTokenClicked = createEvent();
+export const copyTokenClicked = createEvent();
 
-sample({
-  clock: pageChanged,
-  fn: (page) => ({ page, params: { page, size: PAGE_SIZE } }),
-  target: spread({
-    targets: { page: $page, params: catalogHistoryQuery.start },
-  }),
+const copyTokenFx = attach({
+  source: $apiToken,
+  effect(apiToken) {
+    navigator.clipboard.writeText(apiToken);
+  },
+});
+
+cache(catalogHistoryQuery, { staleAfter: '5min' });
+
+update(catalogHistoryQuery, {
+  on: uploadCatalogMutation,
+  by: { success: () => ({ result: { history: [] }, refetch: true }) },
 });
 
 sample({
@@ -40,6 +52,14 @@ sample({
     return;
   },
   target: [catalogHistoryQuery.start, getApiTokenQuery.start],
+});
+
+sample({
+  clock: pageChanged,
+  fn: (page) => ({ page, params: { page, size: PAGE_SIZE } }),
+  target: spread({
+    targets: { page: $page, params: catalogHistoryQuery.start },
+  }),
 });
 
 sample({
@@ -58,33 +78,67 @@ sample({
   clock: getApiTokenQuery.finished.success,
   fn: ({ result: apiToken }) => {
     if (apiToken.length === 0) {
-      return 'Токен не найден';
+      return { noApiToken: true, apiToken };
+    } else {
+      return { apiToken, noApiToken: false };
     }
-    return apiToken;
   },
-  target: $apiToken,
+  target: spread({
+    targets: { apiToken: $apiToken, noApiToken: $noApiToken },
+  }),
 });
 
 sample({
   clock: fileUploaded,
-  filter: (fileList) => {
-    const isYml = fileList?.[0].name.endsWith('.yml');
-    if (!isYml) {
-      enqueueSnackbar('Неверный формат файла', { variant: 'error' });
-    }
-    return isYml === true;
-  },
+  filter: isFileListYml,
   fn: (fileList) => fileList?.[0] as File,
   target: uploadCatalogMutation.start,
 });
+sample({
+  clock: fileUploaded,
+  filter: (fileList) => !isFileListYml(fileList),
+  fn: () => ({ message: 'Неверный формат файла' }),
+  target: notifyError,
+});
+sample({ clock: fileUploaded, target: $fileInputValue.reinit! });
 
 sample({
   clock: uploadCatalogMutation.finished.success,
   fn: () => {
-    enqueueSnackbar('Каталог успешно загружен', { variant: 'success' });
     return;
   },
-  target: [catalogHistoryQuery.start, getApiTokenQuery.start],
+  target: getApiTokenQuery.start,
+});
+
+sample({
+  clock: uploadCatalogMutation.finished.success,
+  fn: () => ({ message: 'Каталог успешно загружен' }),
+  target: notifySuccess,
+});
+sample({
+  clock: uploadCatalogMutation.finished.failure,
+  fn: () => ({ message: 'Произошла ошибка при загрузке каталога' }),
+  target: notifyError,
+});
+
+sample({ clock: generateTokenClicked, target: generateApiTokenMutation.start });
+
+sample({
+  clock: generateApiTokenMutation.finished.success,
+  fn: ({ result: apiToken }) => {
+    return { apiToken, message: { message: 'Токен успешно сгенерирован' } };
+  },
+  target: spread({
+    targets: { apiToken: $apiToken, message: notifySuccess },
+  }),
+});
+
+sample({ clock: copyTokenClicked, target: copyTokenFx });
+
+sample({
+  clock: copyTokenFx.done,
+  fn: () => ({ message: 'Токен успешно скопирован' }),
+  target: notifySuccess,
 });
 
 function getHistoryStatusLabel(status: CatalogHistoryStatus) {
@@ -96,4 +150,8 @@ function getHistoryStatusLabel(status: CatalogHistoryStatus) {
     case 'FAILED':
       return 'Произошла ошибка';
   }
+}
+
+function isFileListYml(fileList: FileList | null) {
+  return fileList?.[0]?.name?.endsWith('.yml') === true;
 }
