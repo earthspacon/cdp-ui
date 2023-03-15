@@ -7,7 +7,7 @@ import { SettingsPage } from '@/pages/settings';
 
 import { MainDrawer } from '@/widgets/main-drawer';
 
-import { routes } from '@/shared/config/routing';
+import { routeControls, routes } from '@/shared/config/routing';
 
 const routesMap = [
   { route: routes.root, path: '/', view: () => null },
@@ -39,7 +39,10 @@ const routesMap = [
   { route: routes.signUp, path: '/sign-up', view: () => null },
 ];
 
-export const router = createHistoryRouter({ routes: routesMap });
+export const router = createHistoryRouter({
+  routes: routesMap,
+  controls: routeControls,
+});
 
 const privateViewRoutes = routesMap.filter(
   (route) => !['/login', '/sign-up'].includes(route.path),
