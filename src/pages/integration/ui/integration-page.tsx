@@ -18,6 +18,7 @@ import '../model/model';
 import {
   $apiToken,
   $catalogHistory,
+  $catalogHistoryTotalCount,
   $fileInputValue,
   $noApiToken,
   $page,
@@ -29,6 +30,8 @@ import {
   pageChanged,
 } from '../model/model';
 
+const MAX_ROWS = 10;
+
 // eslint-disable-next-line import/no-default-export
 export default function IntegrationPage() {
   const {
@@ -37,12 +40,14 @@ export default function IntegrationPage() {
     isCatalogLoading,
     uploadingCatalog,
     fileInputValue,
+    catalogHistoryTotalCount,
   } = useUnit({
     catalogHistory: $catalogHistory,
     page: $page,
     isCatalogLoading: catalogHistoryQuery.$pending,
     uploadingCatalog: uploadCatalogMutation.$pending,
     fileInputValue: $fileInputValue,
+    catalogHistoryTotalCount: $catalogHistoryTotalCount,
   });
 
   return (
@@ -67,26 +72,28 @@ export default function IntegrationPage() {
           </LoadingButton>
         </styles.UploadWrapper>
 
-        <DataGrid
-          rows={catalogHistory}
-          columns={columns}
-          sx={styles.dataGridStyles}
-          autoHeight
-          disableColumnFilter
-          disableColumnMenu
-          disableColumnSelector
-          disableRowSelectionOnClick
-          getRowHeight={() => 'auto'}
-          paginationMode="server"
-          loading={isCatalogLoading}
-          rowCount={100} // TODO: remove after backend sends total count
-          paginationModel={{ page: page, pageSize: PAGE_SIZE }}
-          onPaginationModelChange={({ page }) => pageChanged(page)}
-          slots={{
-            noRowsOverlay: NoData,
-            noResultsOverlay: NoData,
-          }}
-        />
+        <styles.DataGridWrapper isMaxHeight={catalogHistory.length > MAX_ROWS}>
+          <DataGrid
+            rows={catalogHistory}
+            columns={columns}
+            sx={styles.dataGridStyles}
+            autoHeight={catalogHistory.length <= MAX_ROWS}
+            disableColumnFilter
+            disableColumnMenu
+            disableColumnSelector
+            disableRowSelectionOnClick
+            getRowHeight={() => 'auto'}
+            paginationMode="server"
+            loading={isCatalogLoading}
+            rowCount={catalogHistoryTotalCount}
+            paginationModel={{ page: page, pageSize: PAGE_SIZE }}
+            onPaginationModelChange={({ page }) => pageChanged(page)}
+            slots={{
+              noRowsOverlay: NoData,
+              noResultsOverlay: NoData,
+            }}
+          />
+        </styles.DataGridWrapper>
       </styles.TablePart>
 
       <styles.ApiTokenPart>

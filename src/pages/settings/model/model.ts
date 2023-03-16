@@ -1,8 +1,9 @@
-import { cache } from '@farfetched/core';
-import { createEvent, createStore, sample } from 'effector';
+import { cache, update } from '@farfetched/core';
+import { createEvent, createStore, sample, split } from 'effector';
 import { v4 as uuid } from 'uuid';
 
 import { routes } from '@/shared/config/routing';
+import { notifyError } from '@/shared/lib/notification';
 
 import {
   ApiStatusMappings,
@@ -91,10 +92,10 @@ export const saveStatusMappingsClicked = createEvent();
   });
 
   $statusMappings.on(addRowClicked, (prevStatuses) => {
-    const newStatusMapping: StatusMappings = {
+    const newStatusMapping = {
       id: uuid(),
       externalStatus: '',
-      cdpStatus: 'NO_STATUS',
+      cdpStatus: 'NO_STATUS' as const,
       cdpStatusLabel: orderStatues.NO_STATUS,
     };
 
@@ -103,16 +104,59 @@ export const saveStatusMappingsClicked = createEvent();
 }
 
 // Saving status mappings
-// {
-//   sample({
-//     clock: saveStatusMappingsClicked,
-//     source: $statusMappings,
-//     fn(statusMappings) {
+{
+  const prependedSaveStatuses = saveStatusMappingsMutation.start.prepend(
+    (statusMappings: StatusMappings[]) => {
+      const filteredStatusMappings = statusMappings
+        .filter((mapping) => {
+          const externalStatusValid = isExternalStatusValid(
+            mapping.externalStatus,
+          );
+          const cdpStatusValid = isCdpStatusValid(mapping.cdpStatus);
 
-//     },
-//     target: saveStatusMappingsMutation.start,
-//   });
-// }
+          return externalStatusValid && cdpStatusValid;
+        })
+        .map((mapping) => ({
+          externalStatus: mapping.externalStatus,
+          cdpStatus: mapping.cdpStatus,
+        }));
+
+      return { mappings: filteredStatusMappings } as ApiStatusMappings;
+    },
+  );
+
+  const notifyNoCdpStatus = notifyError.prepend(() => ({
+    message: 'Не выбран статус CDP',
+  }));
+  const notifyNoExternalStatus = notifyError.prepend(() => ({
+    message: 'Не задан статус внешней системы',
+  }));
+
+  split({
+    clock: saveStatusMappingsClicked,
+    source: $statusMappings,
+    match: {
+      noExternalStatus: (statusMappings) => {
+        return statusMappings.some(isExternalStatusNotValid);
+      },
+      noCdpStatus: (statusMappings) => {
+        return statusMappings.some(isCdpStatusNotValid);
+      },
+    },
+    cases: {
+      noExternalStatus: notifyNoExternalStatus,
+      noCdpStatus: notifyNoCdpStatus,
+      __: prependedSaveStatuses,
+    },
+  });
+
+  $statusMappings.reset(saveStatusMappingsMutation.finished.success);
+
+  update(statusMappingsQuery, {
+    on: saveStatusMappingsMutation,
+    by: { success: () => ({ result: { mappings: [] }, refetch: true }) },
+  });
+}
 
 export const orderStatues = {
   NO_STATUS: 'Не задано',
@@ -127,3 +171,35 @@ export type OrderStatus = keyof typeof orderStatues;
 export const orderStatusLabels = Object.fromEntries(
   Object.entries(orderStatues).map(([key, value]) => [value, key]),
 ) as Record<string, OrderStatus>;
+
+function isExternalStatusValid(externalStatus: string) {
+  return externalStatus.trim().length > 0;
+}
+function isCdpStatusValid(cdpStatus: OrderStatus) {
+  return cdpStatus !== 'NO_STATUS';
+}
+
+function isExternalStatusNotValid(mapping: StatusMappings) {
+  const externalStatusValid = isExternalStatusValid(mapping.externalStatus);
+  const cdpStatusValid = isCdpStatusValid(mapping.cdpStatus);
+
+  if (!externalStatusValid && !cdpStatusValid) {
+    return false;
+  }
+
+  if (!externalStatusValid) return true;
+
+  return false;
+}
+function isCdpStatusNotValid(mapping: StatusMappings) {
+  const externalStatusValid = isExternalStatusValid(mapping.externalStatus);
+  const cdpStatusValid = isCdpStatusValid(mapping.cdpStatus);
+
+  if (!externalStatusValid && !cdpStatusValid) {
+    return false;
+  }
+
+  if (!cdpStatusValid) return true;
+
+  return false;
+}

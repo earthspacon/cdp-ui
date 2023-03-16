@@ -16,6 +16,7 @@ const CatalogHistorySchema = z.object({
       errorDetails: z.string(),
     }),
   ),
+  totalRecordsCount: z.number(),
 });
 export type ApiCatalogHistory = z.infer<typeof CatalogHistorySchema>;
 export type CatalogHistoryStatus = ApiCatalogHistory['history'][0]['status'];

@@ -1,4 +1,4 @@
-import { AxiosError } from 'axios';
+import { AxiosError, AxiosResponse } from 'axios';
 import {
   attach,
   createEffect,
@@ -44,6 +44,16 @@ export const $isAuthorized = $authTokens.map(
 export const logout = createEvent();
 export const login = createEvent<AuthTokens>();
 
+export const getRefreshTokenFx = attach({
+  source: $authTokens,
+  effect: getAccessTokenByRefreshTokenFx,
+});
+const retryRequestAfter401Fx = createEffect(
+  async (request: () => Promise<AxiosResponse>) => {
+    return request();
+  },
+);
+
 sample({
   clock: logout,
   target: [$authTokens.reinit!, routes.login.open] as const,
@@ -53,12 +63,6 @@ sample({
   clock: login,
   target: [$authTokens, routes.segments.open] as const,
 });
-
-const getRefreshTokenFx = attach({
-  source: $authTokens,
-  effect: getAccessTokenByRefreshTokenFx,
-});
-export const $isAuthChecking = getRefreshTokenFx.pending;
 
 sample({
   clock: getRefreshTokenFx.doneData,
@@ -101,12 +105,8 @@ export function setApiInstanceInterceptors({
           if (error.response.status === 401 && !originalConfig._retry) {
             originalConfig._retry = true;
 
-            try {
-              await getRefreshTokenFx();
-              return API_INSTANCE(originalConfig);
-            } catch (error) {
-              return Promise.reject(error);
-            }
+            await getRefreshTokenFx();
+            await retryRequestAfter401Fx(() => API_INSTANCE(originalConfig));
           }
         }
       },

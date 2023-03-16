@@ -21,6 +21,7 @@ export type CatalogHistory = ApiCatalogHistory['history'][0] & {
 };
 
 export const $catalogHistory = createStore<CatalogHistory[]>([]);
+export const $catalogHistoryTotalCount = createStore(0);
 export const $apiToken = createStore('');
 export const $noApiToken = createStore(false);
 export const $page = createStore(0);
@@ -34,22 +35,14 @@ export const copyTokenClicked = createEvent();
 const copyTokenFx = attach({
   source: $apiToken,
   effect(apiToken) {
-    navigator.clipboard.writeText(apiToken);
+    return navigator.clipboard.writeText(apiToken);
   },
 });
 
-// Cache catalog history query and update it on uploadCatalogMutation
+// Fetching catalog history and api token
 {
   cache(catalogHistoryQuery, { staleAfter: '5min' });
 
-  update(catalogHistoryQuery, {
-    on: uploadCatalogMutation,
-    by: { success: () => ({ result: { history: [] }, refetch: true }) },
-  });
-}
-
-// Fetching catalog history and api token
-{
   sample({
     clock: [loadIntegrationPageFx.done, routes.integration.opened],
     fn: () => {
@@ -76,9 +69,16 @@ const copyTokenFx = attach({
         ...history,
         statusLabel: historyStatuses[history.status],
       }));
-      return catalogHistory;
+      const catalogHistoryTotalCount = catalog.totalRecordsCount;
+
+      return { catalogHistory, catalogHistoryTotalCount };
     },
-    target: $catalogHistory,
+    target: spread({
+      targets: {
+        catalogHistory: $catalogHistory,
+        catalogHistoryTotalCount: $catalogHistoryTotalCount,
+      },
+    }),
   });
 
   sample({
@@ -115,6 +115,16 @@ const copyTokenFx = attach({
 
 // Handling catalog upload
 {
+  update(catalogHistoryQuery, {
+    on: uploadCatalogMutation,
+    by: {
+      success: () => ({
+        result: { history: [], totalRecordsCount: 0 },
+        refetch: true,
+      }),
+    },
+  });
+
   sample({
     clock: uploadCatalogMutation.finished.success,
     fn: () => {
@@ -144,11 +154,12 @@ const copyTokenFx = attach({
 
   sample({
     clock: generateApiTokenMutation.finished.success,
-    fn: ({ result: apiToken }) => {
-      return { apiToken, message: { message: 'Токен успешно сгенерирован' } };
-    },
+    fn: ({ result: apiToken }) => ({
+      apiToken,
+      notifyParams: { message: 'Токен успешно сгенерирован' },
+    }),
     target: spread({
-      targets: { apiToken: $apiToken, message: notifySuccess },
+      targets: { apiToken: $apiToken, notifyParams: notifySuccess },
     }),
   });
 }

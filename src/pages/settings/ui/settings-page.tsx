@@ -1,7 +1,5 @@
 import AddIcon from '@mui/icons-material/Add';
 import { Button, Typography } from '@mui/material';
-import { styled as muiStyled } from '@mui/material/styles';
-import { Box } from '@mui/system';
 import { DataGrid, GridToolbarContainer } from '@mui/x-data-grid';
 import { styled } from '@stitches/react';
 import { useUnit } from 'effector-react';
@@ -9,7 +7,7 @@ import { useUnit } from 'effector-react';
 import { LoadingButton } from '@/shared/ui/loading-button';
 import { NoData } from '@/shared/ui/no-data';
 
-import { statusMappingsQuery } from '../api';
+import { saveStatusMappingsMutation, statusMappingsQuery } from '../api';
 import {
   $statusMappings,
   addRowClicked,
@@ -18,11 +16,14 @@ import {
 } from '../model/model';
 import { columns } from './columns';
 
+const MAX_ROWS = 8;
+
 // eslint-disable-next-line import/no-default-export
 export default function SettingsPage() {
-  const { statusMappings, isStatusesLoading } = useUnit({
+  const { statusMappings, isStatusesLoading, isSavingMappings } = useUnit({
     statusMappings: $statusMappings,
     isStatusesLoading: statusMappingsQuery.$pending,
+    isSavingMappings: saveStatusMappingsMutation.$pending,
   });
 
   return (
@@ -30,11 +31,11 @@ export default function SettingsPage() {
       <TableWrapper>
         <Typography variant="h6">Статус заказов</Typography>
 
-        <StyledDataGridWrapper>
+        <DataGridWrapper isMaxHeight={statusMappings.length > MAX_ROWS}>
           <DataGrid
             rows={statusMappings}
             columns={columns}
-            autoHeight={statusMappings.length < 9}
+            autoHeight={statusMappings.length <= MAX_ROWS}
             disableColumnFilter
             disableColumnMenu
             disableColumnSelector
@@ -54,11 +55,11 @@ export default function SettingsPage() {
               noResultsOverlay: NoData,
             }}
           />
-        </StyledDataGridWrapper>
+        </DataGridWrapper>
 
         <SaveButtonWrapper>
           <LoadingButton
-            loading={false}
+            loading={isSavingMappings}
             variant="contained"
             onClick={() => saveStatusMappingsClicked()}
           >
@@ -99,12 +100,12 @@ const SaveButtonWrapper = styled('div', {
   display: 'flex',
 });
 
-const StyledDataGridWrapper = muiStyled(Box)(() => ({
-  maxHeight: '600px',
-  height: '100%',
-  '& .Mui-error': {
-    backgroundColor: 'rgb(126,10,15, 0.1)',
-    color: '#750f0f',
-    height: '100%',
+const DataGridWrapper = styled('div', {
+  variants: {
+    isMaxHeight: {
+      true: {
+        height: '600px',
+      },
+    },
   },
-}));
+});
