@@ -3,6 +3,7 @@ import { createRoutesView } from 'atomic-router-react';
 import { createBrowserHistory } from 'history';
 
 import { IntegrationPage } from '@/pages/integration';
+import { SegmentsPage } from '@/pages/segments';
 import { SettingsPage } from '@/pages/settings';
 
 import { MainDrawer } from '@/widgets/main-drawer';
@@ -10,11 +11,15 @@ import { MainDrawer } from '@/widgets/main-drawer';
 import { routeControls, routes } from '@/shared/config/routing';
 
 const routesMap = [
-  { route: routes.root, path: '/', view: () => null },
+  {
+    route: routes.root,
+    path: '/',
+    view: () => null,
+  },
   {
     route: routes.segments,
     path: '/segments',
-    view: () => null,
+    view: SegmentsPage,
     layout: MainDrawer,
   },
   {
@@ -35,8 +40,16 @@ const routesMap = [
     view: SettingsPage,
     layout: MainDrawer,
   },
-  { route: routes.login, path: '/login', view: () => null },
-  { route: routes.signUp, path: '/sign-up', view: () => null },
+  {
+    route: routes.login,
+    path: '/login',
+    view: () => null,
+  },
+  {
+    route: routes.signUp,
+    path: '/sign-up',
+    view: () => null,
+  },
 ];
 
 export const router = createHistoryRouter({

@@ -3,11 +3,14 @@ import { MenuItem, Select } from '@mui/material';
 import { GridActionsCellItem, GridColDef } from '@mui/x-data-grid';
 
 import {
-  cdpStatusChanged,
-  deleteRowClicked,
   orderStatues,
   OrderStatus,
   orderStatusLabels,
+} from '@/shared/api/status-mappings';
+
+import {
+  cdpStatusChanged,
+  deleteRowClicked,
   StatusMappings,
 } from '../model/model';
 

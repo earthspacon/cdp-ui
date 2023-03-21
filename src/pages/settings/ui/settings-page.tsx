@@ -4,15 +4,17 @@ import { DataGrid, GridToolbarContainer } from '@mui/x-data-grid';
 import { styled } from '@stitches/react';
 import { useUnit } from 'effector-react';
 
+import { HeightWrapper } from '@/shared/ui/height-wrapper';
 import { LoadingButton } from '@/shared/ui/loading-button';
 import { NoData } from '@/shared/ui/no-data';
 
-import { saveStatusMappingsMutation, statusMappingsQuery } from '../api';
 import {
   $statusMappings,
   addRowClicked,
   externalStatusChanged,
   saveStatusMappingsClicked,
+  saveStatusMappingsMutation,
+  statusMappingsQuery,
 } from '../model/model';
 import { columns } from './columns';
 
@@ -31,7 +33,10 @@ export default function SettingsPage() {
       <TableWrapper>
         <Typography variant="h6">Статус заказов</Typography>
 
-        <DataGridWrapper isMaxHeight={statusMappings.length > MAX_ROWS}>
+        <HeightWrapper
+          isMaxHeight={statusMappings.length > MAX_ROWS}
+          maxHeight={600}
+        >
           <DataGrid
             rows={statusMappings}
             columns={columns}
@@ -55,7 +60,7 @@ export default function SettingsPage() {
               noResultsOverlay: NoData,
             }}
           />
-        </DataGridWrapper>
+        </HeightWrapper>
 
         <SaveButtonWrapper>
           <LoadingButton
@@ -98,14 +103,4 @@ const TableWrapper = styled('div', {
 
 const SaveButtonWrapper = styled('div', {
   display: 'flex',
-});
-
-const DataGridWrapper = styled('div', {
-  variants: {
-    isMaxHeight: {
-      true: {
-        height: '600px',
-      },
-    },
-  },
 });

@@ -20,16 +20,6 @@ export const TablePart = styled('div', {
   gap: '25px',
 });
 
-export const DataGridWrapper = styled('div', {
-  variants: {
-    isMaxHeight: {
-      true: {
-        height: '500px',
-      },
-    },
-  },
-});
-
 export const UploadWrapper = styled('div', {
   display: 'flex',
 

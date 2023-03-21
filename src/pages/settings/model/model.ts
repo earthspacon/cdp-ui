@@ -2,14 +2,16 @@ import { cache, update } from '@farfetched/core';
 import { createEvent, createStore, sample, split } from 'effector';
 import { v4 as uuid } from 'uuid';
 
+import {
+  ApiStatusMappings,
+  createSaveStatusMappingsMutation,
+  createStatusMappingsQuery,
+  orderStatues,
+  OrderStatus,
+} from '@/shared/api/status-mappings';
 import { routes } from '@/shared/config/routing';
 import { notifyError } from '@/shared/lib/notification';
 
-import {
-  ApiStatusMappings,
-  saveStatusMappingsMutation,
-  statusMappingsQuery,
-} from '../api';
 import { loadSettingsPageFx } from './lazy-load';
 
 export type StatusMappings = Omit<
@@ -35,6 +37,10 @@ export const externalStatusChanged = createEvent<{
 export const deleteRowClicked = createEvent<{ id: string }>();
 export const addRowClicked = createEvent();
 export const saveStatusMappingsClicked = createEvent();
+
+export const statusMappingsQuery = createStatusMappingsQuery();
+
+export const saveStatusMappingsMutation = createSaveStatusMappingsMutation();
 
 // Fetching statuses and setting them to the store
 {
@@ -126,10 +132,10 @@ export const saveStatusMappingsClicked = createEvent();
   );
 
   const notifyNoCdpStatus = notifyError.prepend(() => ({
-    message: 'Не выбран статус CDP',
+    message: noCdpStatusErrorMessage,
   }));
   const notifyNoExternalStatus = notifyError.prepend(() => ({
-    message: 'Не задан статус внешней системы',
+    message: noExternalStatusErrorMessage,
   }));
 
   split({
@@ -157,20 +163,6 @@ export const saveStatusMappingsClicked = createEvent();
     by: { success: () => ({ result: { mappings: [] }, refetch: true }) },
   });
 }
-
-export const orderStatues = {
-  NO_STATUS: 'Не задано',
-  NEW: 'Новый',
-  IN_PROGRESS: 'В работе',
-  DELIVERY: 'Передан в службу доставки',
-  DELIVERED: 'Доставлен',
-  CANCEL: 'Отменен',
-};
-export type OrderStatus = keyof typeof orderStatues;
-
-export const orderStatusLabels = Object.fromEntries(
-  Object.entries(orderStatues).map(([key, value]) => [value, key]),
-) as Record<string, OrderStatus>;
 
 function isExternalStatusValid(externalStatus: string) {
   return externalStatus.trim().length > 0;
@@ -203,3 +195,8 @@ function isCdpStatusNotValid(mapping: StatusMappings) {
 
   return false;
 }
+
+const noCdpStatusErrorMessage =
+  'Для каждого статуса в магазине должен быть задан статус в CDP';
+const noExternalStatusErrorMessage =
+  'Статус в магазине не может быть пустой строкой или содержать одни пробелы';

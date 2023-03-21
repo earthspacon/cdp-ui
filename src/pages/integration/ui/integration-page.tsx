@@ -4,6 +4,7 @@ import { DataGrid, GridColDef } from '@mui/x-data-grid';
 import { useUnit } from 'effector-react';
 
 import { Centered } from '@/shared/ui/centered';
+import { HeightWrapper } from '@/shared/ui/height-wrapper';
 import { LoadingButton } from '@/shared/ui/loading-button';
 import { NoData } from '@/shared/ui/no-data';
 
@@ -14,7 +15,6 @@ import {
   getApiTokenQuery,
   uploadCatalogMutation,
 } from '../api';
-import '../model/model';
 import {
   $apiToken,
   $catalogHistory,
@@ -72,7 +72,10 @@ export default function IntegrationPage() {
           </LoadingButton>
         </styles.UploadWrapper>
 
-        <styles.DataGridWrapper isMaxHeight={catalogHistory.length > MAX_ROWS}>
+        <HeightWrapper
+          isMaxHeight={catalogHistory.length > MAX_ROWS}
+          maxHeight={500}
+        >
           <DataGrid
             rows={catalogHistory}
             columns={columns}
@@ -87,13 +90,14 @@ export default function IntegrationPage() {
             loading={isCatalogLoading}
             rowCount={catalogHistoryTotalCount}
             paginationModel={{ page: page, pageSize: PAGE_SIZE }}
+            pageSizeOptions={[PAGE_SIZE]}
             onPaginationModelChange={({ page }) => pageChanged(page)}
             slots={{
               noRowsOverlay: NoData,
               noResultsOverlay: NoData,
             }}
           />
-        </styles.DataGridWrapper>
+        </HeightWrapper>
       </styles.TablePart>
 
       <styles.ApiTokenPart>

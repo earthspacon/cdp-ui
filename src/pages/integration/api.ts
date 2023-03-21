@@ -3,6 +3,7 @@ import { zodContract } from '@farfetched/zod';
 import { createEffect } from 'effector';
 import { z } from 'zod';
 
+import { PaginationParams } from '@/shared/api/types';
 import { API_INSTANCE } from '@/shared/config/api-instance';
 
 const CatalogHistorySchema = z.object({
@@ -21,13 +22,8 @@ const CatalogHistorySchema = z.object({
 export type ApiCatalogHistory = z.infer<typeof CatalogHistorySchema>;
 export type CatalogHistoryStatus = ApiCatalogHistory['history'][0]['status'];
 
-type GetCatalogHistoryParams = {
-  page: number;
-  size: number;
-};
-
 export const catalogHistoryQuery = createQuery({
-  effect: createEffect(async (params?: GetCatalogHistoryParams) => {
+  effect: createEffect(async (params?: PaginationParams) => {
     const response = await API_INSTANCE.get<ApiCatalogHistory>(
       '/import-service/catalog/history',
       { params },
