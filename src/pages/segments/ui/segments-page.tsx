@@ -21,10 +21,11 @@ import { styled } from '@stitches/react';
 import { useStoreMap } from 'effector-react';
 import { useState } from 'react';
 
+import { LabelValue } from '@/shared/types/utility';
 import { HeightWrapper } from '@/shared/ui/height-wrapper';
 import { NoData } from '@/shared/ui/no-data';
 
-import { LabelValue, MappedSegment } from '../lib';
+import { MappedSegment } from '../lib';
 import {
   $segmentCustomers,
   createSegmentClicked,
@@ -100,7 +101,7 @@ const columns: GridColDef<MappedSegment>[] = [
     headerName: 'Параметры сегмента',
     flex: 1.5,
     sortable: false,
-    renderCell: (params) => <FilterParameteres params={params} />,
+    renderCell: (params) => <FilterParameters params={params} />,
   },
 ];
 
@@ -131,7 +132,7 @@ function Customers({
   );
 }
 
-function FilterParameteres({
+function FilterParameters({
   params,
 }: {
   params: GridRenderCellParams<MappedSegment>;
@@ -139,15 +140,19 @@ function FilterParameteres({
   const { customer, loyalty, order } = params.row.filters;
   return (
     <Stack width="100%" spacing={0}>
-      <FilterParamDropDown title="Покупатель" filterParam={customer} />
-      <FilterParamDropDown title="Заказ" filterParam={loyalty} />
-      <FilterParamDropDown title="Программа лояльности" filterParam={order} />
+      {customer && (
+        <FilterParamDropDown title="Покупатель" filterParam={customer} />
+      )}
+      {loyalty && <FilterParamDropDown title="Заказ" filterParam={loyalty} />}
+      {order && (
+        <FilterParamDropDown title="Программа лояльности" filterParam={order} />
+      )}
     </Stack>
   );
 }
 
 type FilterParamProp = {
-  filterParam: Record<string, LabelValue>;
+  filterParam: Record<string, LabelValue<string>>;
 };
 
 function FilterParamDropDown({

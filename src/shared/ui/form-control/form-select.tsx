@@ -7,23 +7,32 @@ import {
 } from '@mui/material';
 import { ConnectedField } from 'effector-forms';
 
+import { LabelValue } from '@/shared/types/utility';
+
 type Value = string | number;
 
-type LabelValue = { label: string; value: Value };
+type FormControlProps = React.ComponentProps<typeof FormControl>;
 
-interface FormSelectProps {
+interface FormSelectProps<T extends Value> {
   label: string;
-  options: LabelValue[];
-  field: ConnectedField<Value>;
+  options: LabelValue<T>[];
+  field: ConnectedField<T>;
+  formControlProps?: FormControlProps;
 }
 
-export function FormSelect({ label, options, field }: FormSelectProps) {
+export function FormSelect<T extends Value>({
+  label,
+  options,
+  field,
+  formControlProps,
+}: FormSelectProps<T>) {
   return (
-    <FormControl error={field.hasError()}>
+    <FormControl error={field.hasError()} {...formControlProps}>
       <InputLabel>{label}</InputLabel>
       <Select
+        label={label}
         value={field.value}
-        onChange={(evt) => field.onChange(evt.target.value)}
+        onChange={(evt) => field.onChange(evt.target.value as T)}
         onBlur={() => field.onBlur()}
       >
         {options.map(({ label, value }) => (

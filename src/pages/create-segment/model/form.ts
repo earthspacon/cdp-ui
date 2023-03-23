@@ -8,5 +8,14 @@ export const segmentCreationForm = createForm({
     segmentCode: {
       init: '',
     },
+    email: {
+      init: '',
+    },
+    gender: {
+      init: '',
+    },
+    phoneNumber: {
+      init: '',
+    },
   },
 });

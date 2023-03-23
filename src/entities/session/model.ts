@@ -10,7 +10,7 @@ import {
 import { persist } from 'effector-storage';
 import Cookies from 'js-cookie';
 
-import { AuthTokensSchema } from '@/shared/api/auth-tokens';
+import { AuthTokensSchema } from '@/shared/api/auth';
 import { API_INSTANCE } from '@/shared/config/api-instance';
 import { routes } from '@/shared/config/routing';
 import { EffectorStorageCookieAdapter } from '@/shared/lib/effector-storage-cookie-adapter';
@@ -47,6 +47,7 @@ export const login = createEvent<AuthTokens>();
 export const getRefreshTokenFx = attach({
   source: $authTokens,
   effect: getAccessTokenByRefreshTokenFx,
+  mapParams: (_: void, tokens) => ({ refreshToken: tokens.refreshToken }),
 });
 const retryRequestAfter401Fx = createEffect(
   async (request: () => Promise<AxiosResponse>) => {
@@ -66,7 +67,11 @@ sample({
 
 sample({
   clock: getRefreshTokenFx.doneData,
-  fn: ({ accessToken }) => ({ accessToken, refreshToken: accessToken }),
+  source: $authTokens,
+  fn: (prevTokens, { accessToken }) => ({
+    accessToken,
+    refreshToken: prevTokens.refreshToken, // FIX refresh token is not changed
+  }),
   target: $authTokens,
 });
 
@@ -109,6 +114,8 @@ export function setApiInstanceInterceptors({
             await retryRequestAfter401Fx(() => API_INSTANCE(originalConfig));
           }
         }
+
+        return Promise.reject(error);
       },
     );
   });

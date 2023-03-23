@@ -1,7 +1,7 @@
 import { createMutation } from '@farfetched/core';
 import { createEffect } from 'effector';
 
-import { AuthTokens, authTokensContract } from '@/shared/api/auth-tokens';
+import { AuthTokens, authTokensContract } from '@/shared/api/auth';
 import { API_INSTANCE } from '@/shared/config/api-instance';
 
 type LoginParams = {

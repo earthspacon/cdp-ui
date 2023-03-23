@@ -28,23 +28,29 @@ const SegmentsListSchema = z.object({
       name: z.string(),
       code: z.string(),
       filters: z.object({
-        customer: z.object({
-          email: IsEmptySchema,
-          gender: z.object({ value: z.literal(1).or(z.literal(2)) }),
-          phoneNumber: IsEmptySchema,
-          birthDate: FromDateToDateSchema,
-        }),
-        order: z.object({
-          date: FromDateToDateSchema,
-          status: z.object({ value: StatusSchema }),
-          ordersCount: FromToSchema,
-          ordersPriceSum: FromToSchema,
-        }),
-        loyalty: z.object({
-          level: z.object({ value: z.string() }),
-          status: z.object({ value: LoyaltyProgramStatusSchema }),
-          amountOfBonuses: FromToSchema,
-        }),
+        customer: z
+          .object({
+            email: IsEmptySchema,
+            gender: z.object({ value: z.literal(1).or(z.literal(2)) }),
+            phoneNumber: IsEmptySchema,
+            birthDate: FromDateToDateSchema,
+          })
+          .nullable(),
+        order: z
+          .object({
+            date: FromDateToDateSchema,
+            status: z.object({ value: StatusSchema }),
+            ordersCount: FromToSchema,
+            ordersPriceSum: FromToSchema,
+          })
+          .nullable(),
+        loyalty: z
+          .object({
+            level: z.object({ value: z.string() }),
+            status: z.object({ value: LoyaltyProgramStatusSchema }),
+            amountOfBonuses: FromToSchema,
+          })
+          .nullable(),
       }),
     }),
   ),

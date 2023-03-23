@@ -1,6 +1,6 @@
 import { createEffect } from 'effector';
 
-import { AccessToken, AccessTokenSchema } from '@/shared/api/auth-tokens';
+import { AccessToken, AccessTokenSchema } from '@/shared/api/auth';
 import { API_INSTANCE } from '@/shared/config/api-instance';
 
 export const getAccessTokenByRefreshTokenFx = createEffect(

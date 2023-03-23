@@ -7,3 +7,5 @@ export type ChildrenProp = {
 export type InferStoreValues<T> = {
   [key in keyof T]: T[key] extends Store<infer U> ? U : never;
 };
+
+export type LabelValue<T> = { label: string; value: T };

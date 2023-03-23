@@ -5,6 +5,7 @@ import { z } from 'zod';
 
 import { sessionModel } from '@/entities/session';
 
+import { PasswordSchema } from '@/shared/api/auth';
 import { createRule } from '@/shared/lib/validation-rules/create-rule';
 
 import { loginMutation } from '../api';
@@ -33,10 +34,7 @@ export const loginForm = createForm({
       rules: [
         createRule({
           name: 'password',
-          schema: z
-            .string()
-            .min(1, { message: 'Введите пароль' })
-            .min(4, { message: 'Пароль должен быть не менее 4 символов' }),
+          schema: PasswordSchema,
         }),
       ],
     },

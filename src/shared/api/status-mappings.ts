@@ -5,6 +5,8 @@ import { z } from 'zod';
 
 import { API_INSTANCE } from '@/shared/config/api-instance';
 
+import { LabelValue } from '../types/utility';
+
 export const StatusSchema = z
   .literal('NEW')
   .or(
@@ -62,3 +64,7 @@ export type OrderStatus = keyof typeof orderStatues;
 export const orderStatusLabels = Object.fromEntries(
   Object.entries(orderStatues).map(([key, value]) => [value, key]),
 ) as Record<string, OrderStatus>;
+
+export const orderStatusOptions = Object.entries(orderStatues).map(
+  ([value, label]) => ({ value, label }),
+) as LabelValue<OrderStatus>[];

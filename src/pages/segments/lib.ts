@@ -1,12 +1,14 @@
-import { loyaltyProgramStatuses } from '@/shared/api/segments';
+import {
+  hasValueBoolToLabelMapping,
+  loyaltyProgramStatuses,
+} from '@/shared/api/segments';
 import { orderStatues } from '@/shared/api/status-mappings';
+import { LabelValue } from '@/shared/types/utility';
 
 import { Filters, Segment } from './api';
 
-export type LabelValue = { label: string; value: string };
-
 type MappedFilter<Filter> = {
-  [filterKey in keyof Filter]: LabelValue;
+  [filterKey in keyof Filter]: LabelValue<string>;
 };
 
 type MappedFilters = {
@@ -21,9 +23,9 @@ export function mapSegments(segments: Segment[]): MappedSegment[] {
   return segments.map((segment) => {
     const { customer, loyalty, order } = segment.filters;
 
-    const mappedCustomer = mapCustomerFilter(customer);
-    const mappedOrder = mapOrderFilter(order);
-    const mappedLoyalty = mapLoyalFilter(loyalty);
+    const mappedCustomer = customer ? mapCustomerFilter(customer) : null;
+    const mappedOrder = order ? mapOrderFilter(order) : null;
+    const mappedLoyalty = loyalty ? mapLoyaltyFilter(loyalty) : null;
 
     return {
       ...segment,
@@ -37,12 +39,14 @@ export function mapSegments(segments: Segment[]): MappedSegment[] {
 }
 
 function mapCustomerFilter(
-  customer: Filters['customer'],
-): MappedFilter<Filters['customer']> {
+  customer: Exclude<Filters['customer'], null>,
+): MappedFilter<Exclude<Filters['customer'], null>> {
   const { email, birthDate, gender, phoneNumber } = customer;
 
-  const emailValue = getIsEmptyValue(email.isEmpty);
-  const phoneValue = getIsEmptyValue(phoneNumber.isEmpty);
+  const emailValue =
+    hasValueBoolToLabelMapping[email.isEmpty ? 'true' : 'false'];
+  const phoneValue =
+    hasValueBoolToLabelMapping[phoneNumber.isEmpty ? 'true' : 'false'];
   const birthDateValue = `${birthDate.fromDate} - ${birthDate.toDate}`;
   const genderValue = getSexValue(gender.value);
 
@@ -55,8 +59,8 @@ function mapCustomerFilter(
 }
 
 function mapOrderFilter(
-  order: Filters['order'],
-): MappedFilter<Filters['order']> {
+  order: Exclude<Filters['order'], null>,
+): MappedFilter<Exclude<Filters['order'], null>> {
   const { date, status, ordersCount, ordersPriceSum } = order;
 
   const dateValue = `${date.fromDate} - ${date.toDate}`;
@@ -72,9 +76,9 @@ function mapOrderFilter(
   };
 }
 
-function mapLoyalFilter(
-  loyal: Filters['loyalty'],
-): MappedFilter<Filters['loyalty']> {
+function mapLoyaltyFilter(
+  loyal: Exclude<Filters['loyalty'], null>,
+): MappedFilter<Exclude<Filters['loyalty'], null>> {
   const { level, status, amountOfBonuses } = loyal;
 
   return {
@@ -93,9 +97,6 @@ function mapLoyalFilter(
   };
 }
 
-function getIsEmptyValue(value: boolean) {
-  return value ? 'Пусто' : 'Заполнено';
-}
 function getSexValue(value: 1 | 2) {
   return value === 1 ? 'Мужской' : 'Женский';
 }

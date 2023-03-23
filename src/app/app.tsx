@@ -3,6 +3,8 @@ import '@fontsource/roboto/400.css';
 import '@fontsource/roboto/500.css';
 import '@fontsource/roboto/700.css';
 import { Button, Typography } from '@mui/material';
+import { LocalizationProvider } from '@mui/x-date-pickers';
+import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import { styled } from '@stitches/react';
 import { Route, RouterProvider } from 'atomic-router-react';
 import { createEvent } from 'effector';
@@ -33,18 +35,20 @@ export function App() {
   return (
     <AppWrapper>
       <ErrorBoundary FallbackComponent={ErrorComponent}>
-        <StyledSnackbarProvider>
-          <Suspense fallback={<AppLoading />}>
-            <RouterProvider router={router}>
-              <Route route={routes.login} view={LoginPage} />
-              <Route route={routes.signUp} view={SignUpPage} />
+        <LocalizationProvider dateAdapter={AdapterDayjs}>
+          <StyledSnackbarProvider>
+            <Suspense fallback={<AppLoading />}>
+              <RouterProvider router={router}>
+                <Route route={routes.login} view={LoginPage} />
+                <Route route={routes.signUp} view={SignUpPage} />
 
-              <AuthCheck>
-                <PrivateRoutesView />
-              </AuthCheck>
-            </RouterProvider>
-          </Suspense>
-        </StyledSnackbarProvider>
+                <AuthCheck>
+                  <PrivateRoutesView />
+                </AuthCheck>
+              </RouterProvider>
+            </Suspense>
+          </StyledSnackbarProvider>
+        </LocalizationProvider>
       </ErrorBoundary>
     </AppWrapper>
   );
