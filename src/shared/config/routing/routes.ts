@@ -7,6 +7,7 @@ export const routes = {
   signUp: createRoute(),
   integration: createRoute(),
   segments: createRoute(),
+  createSegment: createRoute(),
   mailingLists: createRoute(),
   settings: createRoute(),
 };

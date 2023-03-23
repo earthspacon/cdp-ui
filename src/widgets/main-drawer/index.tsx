@@ -26,7 +26,7 @@ export function MainDrawer({ children }: ChildrenProp) {
         <List>
           {mainDrawerItems.map((drawerItem) => (
             <ListItem key={drawerItem.title}>
-              <NoStyleLink to={drawerItem.route}>
+              <NoStyleLink to={drawerItem.route} css={{ width: '100%' }}>
                 <ListItemBtn isRouteOpened={drawerItem.route.$isOpened}>
                   <ListItemText primary={drawerItem.title} />
                 </ListItemBtn>

@@ -2,6 +2,7 @@ import { createHistoryRouter, redirect } from 'atomic-router';
 import { createRoutesView } from 'atomic-router-react';
 import { createBrowserHistory } from 'history';
 
+import { CreateSegmentPage } from '@/pages/create-segment';
 import { IntegrationPage } from '@/pages/integration';
 import { SegmentsPage } from '@/pages/segments';
 import { SettingsPage } from '@/pages/settings';
@@ -21,6 +22,11 @@ const routesMap = [
     path: '/segments',
     view: SegmentsPage,
     layout: MainDrawer,
+  },
+  {
+    route: routes.createSegment,
+    path: '/segments/create',
+    view: CreateSegmentPage,
   },
   {
     route: routes.integration,

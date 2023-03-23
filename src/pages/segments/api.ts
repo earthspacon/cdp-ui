@@ -30,7 +30,7 @@ const SegmentsListSchema = z.object({
       filters: z.object({
         customer: z.object({
           email: IsEmptySchema,
-          gender: z.object({ value: z.number() }),
+          gender: z.object({ value: z.literal(1).or(z.literal(2)) }),
           phoneNumber: IsEmptySchema,
           birthDate: FromDateToDateSchema,
         }),
@@ -64,4 +64,17 @@ export const segmentsListQuery = createQuery({
     return response.data;
   }),
   contract: zodContract(SegmentsListSchema),
+});
+
+const CustomersCountSchema = z.object({ customersCount: z.number() });
+type CustomersCount = z.infer<typeof CustomersCountSchema>;
+
+export const segmentsCustomersCountQuery = createQuery({
+  effect: createEffect(async (segmentId: string) => {
+    const response = await API_INSTANCE.get<CustomersCount>(
+      `/management-service/segments/${segmentId}/count`,
+    );
+    return response.data;
+  }),
+  contract: zodContract(CustomersCountSchema),
 });

@@ -96,6 +96,6 @@ function mapLoyalFilter(
 function getIsEmptyValue(value: boolean) {
   return value ? 'Пусто' : 'Заполнено';
 }
-function getSexValue(value: number) {
-  return value === 0 ? 'Мужской' : 'Женский';
+function getSexValue(value: 1 | 2) {
+  return value === 1 ? 'Мужской' : 'Женский';
 }

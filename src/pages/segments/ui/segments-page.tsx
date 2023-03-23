@@ -2,6 +2,7 @@ import { reflect } from '@effector/reflect';
 import ExpandLess from '@mui/icons-material/ExpandLess';
 import ExpandMore from '@mui/icons-material/ExpandMore';
 import {
+  Box,
   Button,
   Collapse,
   ListItemButton,
@@ -9,6 +10,7 @@ import {
   Stack,
   Typography,
 } from '@mui/material';
+import CircularProgress from '@mui/material/CircularProgress';
 import {
   DataGrid,
   gridClasses,
@@ -16,6 +18,7 @@ import {
   GridRenderCellParams,
 } from '@mui/x-data-grid';
 import { styled } from '@stitches/react';
+import { useStoreMap } from 'effector-react';
 import { useState } from 'react';
 
 import { HeightWrapper } from '@/shared/ui/height-wrapper';
@@ -23,6 +26,8 @@ import { NoData } from '@/shared/ui/no-data';
 
 import { LabelValue, MappedSegment } from '../lib';
 import {
+  $segmentCustomers,
+  createSegmentClicked,
   PAGE_SIZE,
   pageChanged,
   segmentsContentStores,
@@ -45,7 +50,9 @@ function SegmentsPageContent({
   return (
     <Wrapper>
       <CreateSegmentButton>
-        <Button variant="contained">Создать сегмент</Button>
+        <Button variant="contained" onClick={() => createSegmentClicked()}>
+          Создать сегмент
+        </Button>
       </CreateSegmentButton>
 
       <HeightWrapper
@@ -83,9 +90,10 @@ const columns: GridColDef<MappedSegment>[] = [
     flex: 1,
   },
   {
-    field: 'statusLabel', // TODO: status from another api
+    field: 'id',
     headerName: 'Клиенты',
     flex: 0.5,
+    renderCell: (params) => <Customers params={params} />,
   },
   {
     field: 'filters',
@@ -95,6 +103,33 @@ const columns: GridColDef<MappedSegment>[] = [
     renderCell: (params) => <FilterParameteres params={params} />,
   },
 ];
+
+function Customers({
+  params,
+}: {
+  params: GridRenderCellParams<MappedSegment>;
+}) {
+  const id = params.row.id;
+
+  const customer = useStoreMap({
+    store: $segmentCustomers,
+    keys: [id],
+    fn: (customers, [segmentId]) => {
+      return customers.find((customer) => customer.id === segmentId);
+    },
+    defaultValue: { id, loading: false, customersCount: 0 },
+  });
+
+  return (
+    <Box>
+      {customer.loading ? (
+        <CircularProgress />
+      ) : (
+        <Typography>{customer.customersCount}</Typography>
+      )}
+    </Box>
+  );
+}
 
 function FilterParameteres({
   params,
