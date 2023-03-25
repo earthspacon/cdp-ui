@@ -1,3 +1,4 @@
+import { Dayjs } from 'dayjs';
 import { Store } from 'effector';
 
 export type ChildrenProp = {
@@ -9,3 +10,5 @@ export type InferStoreValues<T> = {
 };
 
 export type LabelValue<T> = { label: string; value: T };
+
+export type FormDate = Dayjs | null;

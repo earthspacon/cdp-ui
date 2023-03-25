@@ -1,106 +1,288 @@
-import { Stack, Typography } from '@mui/material';
-import { DatePicker } from '@mui/x-date-pickers/DatePicker';
+import { Button, Stack, TextField, Typography } from '@mui/material';
 import { styled } from '@stitches/react';
-import { useForm } from 'effector-forms';
+import { useField, useForm } from 'effector-forms';
+import { useUnit } from 'effector-react';
 
-import { genderOptions, hasValueOptions } from '@/shared/api/segments';
+import {
+  genderOptions,
+  hasValueOptions,
+  loyaltyProgramStatusOptions,
+} from '@/shared/api/segments';
 import { orderStatusOptions } from '@/shared/api/status-mappings';
 import { ChildrenProp } from '@/shared/types/utility';
+import { FormDatePicker } from '@/shared/ui/form-control/form-date-picker';
 import { FormInput } from '@/shared/ui/form-control/form-input';
 import { FormSelect } from '@/shared/ui/form-control/form-select';
+import { LoadingButton } from '@/shared/ui/loading-button';
 
 import { segmentCreationForm } from '../model/form';
+import {
+  $loyaltyLevelOptions,
+  $segmentCode,
+  loyaltyLevelsQuery,
+} from '../model/model';
+
+const inputsWidth = '250px';
+const inputsWidthProp = { width: inputsWidth };
+const dateFormat = 'DD/MM/YYYY';
+
+const formFields = segmentCreationForm.fields;
 
 // eslint-disable-next-line import/no-default-export
-export default function CreateSegmentPageContent() {
-  const { fields } = useForm(segmentCreationForm);
-
+export default function CreateSegmentPage() {
   return (
     <Wrapper>
       <FormWrapper>
-        <Stack spacing={6}>
-          <Typography textAlign="center" variant="h4" fontWeight={500}>
-            Создание сегмента
-          </Typography>
-          <Stack spacing={5}>
-            <Stack spacing={2} width="40%">
-              <FormInput
-                field={fields.segmentName}
-                textFieldProps={{ label: 'Название сегмента' }}
-              />
-              <FormInput
-                field={fields.segmentCode}
-                textFieldProps={{
-                  label: 'Код сегмента',
-                  InputProps: { readOnly: true },
-                  size: 'small',
-                }}
-              />
+        <Stack spacing={10}>
+          <Stack spacing={6}>
+            <Typography textAlign="center" variant="h4" fontWeight={500}>
+              Создание сегмента
+            </Typography>
+
+            <Stack spacing={5}>
+              <SegmentNameInputs />
+              <BuyersInputs />
+              <OrdersInputs />
+              <LoyaltyProgramInputs />
             </Stack>
-
-            <FilterWrapper title="Покупатели">
-              <Stack spacing={5} direction="row">
-                <Stack spacing={2} width="30%">
-                  <FormSelect
-                    field={fields.email}
-                    label="Email"
-                    options={hasValueOptions}
-                  />
-                  <FormSelect
-                    field={fields.gender}
-                    label="Пол"
-                    options={genderOptions}
-                  />
-                </Stack>
-                <Stack spacing={2}>
-                  <FormSelect
-                    field={fields.phoneNumber}
-                    label="Номер телефона"
-                    options={hasValueOptions}
-                  />
-
-                  <Stack spacing={2} direction="row" alignItems="center">
-                    <DatePicker label="Дата рождения (от)" />
-
-                    <Typography>—</Typography>
-
-                    <DatePicker label="Дата рождения (до)" />
-                  </Stack>
-                </Stack>
-              </Stack>
-            </FilterWrapper>
-
-            <FilterWrapper title="Заказы">
-              <Stack spacing={5} direction="row">
-                <Stack spacing={2}>
-                  <Stack spacing={2} direction="row" alignItems="center">
-                    <DatePicker label="Диапазон дат (от)" />
-
-                    <Typography>—</Typography>
-
-                    <DatePicker label="Диапазон дат (до)" />
-                  </Stack>
-
-                  <FormSelect
-                    field={fields.gender}
-                    label="Статус заказов"
-                    options={orderStatusOptions}
-                  />
-                </Stack>
-
-                <Stack spacing={2} width="30%">
-                  {/* <FormInput label="Дата рождения (от)" /> */}
-
-                  <Typography>—</Typography>
-
-                  <DatePicker label="Дата рождения (до)" />
-                </Stack>
-              </Stack>
-            </FilterWrapper>
           </Stack>
+
+          <Actions />
         </Stack>
       </FormWrapper>
     </Wrapper>
+  );
+}
+
+function Actions() {
+  const { submit, eachValid } = useForm(segmentCreationForm);
+
+  return (
+    <Stack spacing={8} direction="row" justifyContent="center" pb={2}>
+      <Button variant="contained" color="error" size="large">
+        Отменить
+      </Button>
+
+      <LoadingButton
+        loading={false}
+        disabled={!eachValid}
+        variant="contained"
+        size="large"
+        onClick={() => submit()}
+      >
+        Сохранить
+      </LoadingButton>
+    </Stack>
+  );
+}
+
+function SegmentNameInputs() {
+  const segmentNameField = useField(formFields.segmentName);
+  const segmentCode = useUnit($segmentCode);
+
+  return (
+    <Stack spacing={2} width="45%">
+      <FormInput
+        field={segmentNameField}
+        textFieldProps={{ label: 'Название сегмента' }}
+      />
+      <TextField
+        label="Код сегмента"
+        value={segmentCode}
+        InputProps={{ readOnly: true }}
+      />
+    </Stack>
+  );
+}
+
+function BuyersInputs() {
+  const emailField = useField(segmentCreationForm.fields.email);
+  const genderField = useField(segmentCreationForm.fields.gender);
+  const phoneNumberField = useField(segmentCreationForm.fields.phoneNumber);
+  const birthDateFromField = useField(segmentCreationForm.fields.birthDateFrom);
+  const birthDateToField = useField(segmentCreationForm.fields.birthDateTo);
+
+  return (
+    <FilterWrapper title="Покупатели">
+      <Stack spacing={5.5} direction="row">
+        <Stack spacing={2} {...inputsWidthProp}>
+          <FormSelect
+            field={emailField}
+            label="Email"
+            options={hasValueOptions}
+          />
+          <FormSelect field={genderField} label="Пол" options={genderOptions} />
+        </Stack>
+
+        <Stack spacing={2}>
+          <FormSelect
+            field={phoneNumberField}
+            label="Номер телефона"
+            options={hasValueOptions}
+            formControlProps={{ sx: inputsWidthProp }}
+          />
+
+          <Stack spacing={2} direction="row" alignItems="baseline">
+            <FormDatePicker
+              field={birthDateFromField}
+              label="Дата рождения (от)"
+              format={dateFormat}
+              sx={inputsWidthProp}
+              disableFuture
+            />
+
+            <Typography>—</Typography>
+
+            <FormDatePicker
+              field={birthDateToField}
+              label="Дата рождения (до)"
+              format={dateFormat}
+              sx={inputsWidthProp}
+              disableFuture
+            />
+          </Stack>
+        </Stack>
+      </Stack>
+    </FilterWrapper>
+  );
+}
+
+function OrdersInputs() {
+  const ordersNumberFromField = useField(formFields.ordersNumberFrom);
+  const ordersNumberToField = useField(formFields.ordersNumberTo);
+  const ordersTotalFromField = useField(formFields.ordersTotalFrom);
+  const ordersTotalToField = useField(formFields.ordersTotalTo);
+  const ordersStatusField = useField(formFields.ordersStatus);
+  const purchaseDateRangeFrom = useField(formFields.purchaseDateRangeFrom);
+  const purchaseDateRangeTo = useField(formFields.purchaseDateRangeTo);
+
+  return (
+    <FilterWrapper title="Заказы">
+      <Stack spacing={5.5} direction="row">
+        <Stack spacing={2}>
+          <Stack spacing={2} direction="row" alignItems="baseline">
+            <FormInput
+              field={ordersNumberFromField}
+              textFieldProps={{
+                label: 'Количество заказов (от)',
+                sx: inputsWidthProp,
+              }}
+            />
+
+            <Typography>—</Typography>
+
+            <FormInput
+              field={ordersNumberToField}
+              textFieldProps={{
+                label: 'Количество заказов (до)',
+                sx: inputsWidthProp,
+              }}
+            />
+          </Stack>
+
+          <Stack spacing={2} direction="row" alignItems="baseline">
+            <FormInput
+              field={ordersTotalFromField}
+              textFieldProps={{
+                label: 'Сумма заказов (от)',
+                sx: inputsWidthProp,
+              }}
+            />
+
+            <Typography>—</Typography>
+
+            <FormInput
+              field={ordersTotalToField}
+              textFieldProps={{
+                label: 'Сумма заказов (до)',
+                sx: inputsWidthProp,
+              }}
+            />
+          </Stack>
+        </Stack>
+
+        <Stack spacing={2}>
+          <Stack spacing={2} direction="row" alignItems="baseline">
+            <FormDatePicker
+              field={purchaseDateRangeFrom}
+              label="Диапазон дат (от)"
+              format={dateFormat}
+              sx={inputsWidthProp}
+            />
+
+            <Typography>—</Typography>
+
+            <FormDatePicker
+              field={purchaseDateRangeTo}
+              label="Диапазон дат (до)"
+              format={dateFormat}
+              sx={inputsWidthProp}
+            />
+          </Stack>
+
+          <FormSelect
+            field={ordersStatusField}
+            label="Статус заказов"
+            options={orderStatusOptions}
+            formControlProps={{ sx: inputsWidthProp }}
+          />
+        </Stack>
+      </Stack>
+    </FilterWrapper>
+  );
+}
+
+function LoyaltyProgramInputs() {
+  const loyaltyProgramLevelField = useField(formFields.loyaltyProgramLevel);
+  const loyaltyProgramStatusField = useField(formFields.loyaltyProgramStatus);
+  const bonusesBalanceFromField = useField(formFields.bonusesBalanceFrom);
+  const bonusesBalanceToField = useField(formFields.bonusesBalanceTo);
+
+  const { isLoyaltyLevelsLoading, loyaltyLevelOptions } = useUnit({
+    isLoyaltyLevelsLoading: loyaltyLevelsQuery.$pending,
+    loyaltyLevelOptions: $loyaltyLevelOptions,
+  });
+
+  return (
+    <FilterWrapper title="Программа лояльности">
+      <Stack spacing={5.5} direction="row">
+        <Stack spacing={2} width="320px">
+          <FormSelect
+            field={loyaltyProgramLevelField}
+            label="Уровень в программе лояльности"
+            options={loyaltyLevelOptions}
+            loading={isLoyaltyLevelsLoading}
+          />
+          <FormSelect
+            field={loyaltyProgramStatusField}
+            label="Статус в программе лояльности"
+            options={loyaltyProgramStatusOptions}
+          />
+        </Stack>
+
+        <Stack>
+          <Stack spacing={2} direction="row" alignItems="baseline">
+            <FormInput
+              field={bonusesBalanceFromField}
+              textFieldProps={{
+                label: 'Баланс бонусов (от)',
+                sx: inputsWidthProp,
+              }}
+            />
+
+            <Typography>—</Typography>
+
+            <FormInput
+              field={bonusesBalanceToField}
+              textFieldProps={{
+                label: 'Баланс бонусов (до)',
+                sx: inputsWidthProp,
+              }}
+            />
+          </Stack>
+        </Stack>
+      </Stack>
+    </FilterWrapper>
   );
 }
 

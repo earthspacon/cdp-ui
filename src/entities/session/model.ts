@@ -9,6 +9,7 @@ import {
 } from 'effector';
 import { persist } from 'effector-storage';
 import Cookies from 'js-cookie';
+import { not, or } from 'patronum';
 
 import { AuthTokensSchema } from '@/shared/api/auth';
 import { API_INSTANCE } from '@/shared/config/api-instance';
@@ -47,7 +48,7 @@ export const login = createEvent<AuthTokens>();
 export const getRefreshTokenFx = attach({
   source: $authTokens,
   effect: getAccessTokenByRefreshTokenFx,
-  mapParams: (_: void, tokens) => ({ refreshToken: tokens.refreshToken }),
+  mapParams: (_: void, { refreshToken }) => ({ refreshToken }),
 });
 const retryRequestAfter401Fx = createEffect(
   async (request: () => Promise<AxiosResponse>) => {
@@ -81,7 +82,11 @@ sample({
 });
 
 export function checkSession({ event }: { event: Event<void> }) {
-  sample({ clock: event, target: getRefreshTokenFx });
+  sample({
+    clock: event,
+    filter: not(or(routes.login.$isOpened, routes.signUp.$isOpened)),
+    target: getRefreshTokenFx,
+  });
 }
 
 export function setApiInstanceInterceptors({
@@ -110,8 +115,12 @@ export function setApiInstanceInterceptors({
           if (error.response.status === 401 && !originalConfig._retry) {
             originalConfig._retry = true;
 
-            await getRefreshTokenFx();
-            await retryRequestAfter401Fx(() => API_INSTANCE(originalConfig));
+            try {
+              await getRefreshTokenFx();
+              await retryRequestAfter401Fx(() => API_INSTANCE(originalConfig));
+            } catch (err) {
+              Promise.reject(err);
+            }
           }
         }
 

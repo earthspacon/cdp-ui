@@ -30,7 +30,7 @@ export default function LoginPage() {
           <FormInput field={fields.email} textFieldProps={{ label: 'Email' }} />
           <FormInput
             field={fields.password}
-            textFieldProps={{ label: 'Пароль' }}
+            textFieldProps={{ label: 'Пароль', type: 'password' }}
           />
 
           {Object.values(loginErrors).some(Boolean) && (

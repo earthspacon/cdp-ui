@@ -30,11 +30,11 @@ export default function SignUpPage() {
           <FormInput field={fields.email} textFieldProps={{ label: 'Email' }} />
           <FormInput
             field={fields.password}
-            textFieldProps={{ label: 'Пароль' }}
+            textFieldProps={{ label: 'Пароль', type: 'password' }}
           />
           <FormInput
             field={fields.confirmPassword}
-            textFieldProps={{ label: 'Повторите пароль' }}
+            textFieldProps={{ label: 'Повторите пароль', type: 'password' }}
           />
           <FormInput
             field={fields.shopUrl}
