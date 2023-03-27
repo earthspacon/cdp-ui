@@ -1,4 +1,5 @@
 import {
+  genderNumberToLabelMapping,
   hasValueBoolToLabelMapping,
   loyaltyProgramStatuses,
 } from '@/shared/api/segments';
@@ -14,6 +15,8 @@ type MappedFilter<Filter> = {
 type MappedFilters = {
   [filter in keyof Filters]: MappedFilter<Filters[filter]>;
 };
+
+const noDataLabel = 'Нет данных';
 
 export interface MappedSegment extends Omit<Segment, 'filters'> {
   filters: MappedFilters;
@@ -43,12 +46,18 @@ function mapCustomerFilter(
 ): MappedFilter<Exclude<Filters['customer'], null>> {
   const { email, birthDate, gender, phoneNumber } = customer;
 
-  const emailValue =
-    hasValueBoolToLabelMapping[email.isEmpty ? 'true' : 'false'];
-  const phoneValue =
-    hasValueBoolToLabelMapping[phoneNumber.isEmpty ? 'true' : 'false'];
-  const birthDateValue = `${birthDate.fromDate} - ${birthDate.toDate}`;
-  const genderValue = getSexValue(gender.value);
+  const emailValue = email
+    ? hasValueBoolToLabelMapping[email.isEmpty ? 'true' : 'false']
+    : noDataLabel;
+  const phoneValue = phoneNumber
+    ? hasValueBoolToLabelMapping[phoneNumber.isEmpty ? 'true' : 'false']
+    : noDataLabel;
+  const birthDateValue = birthDate
+    ? `${birthDate.fromDate} - ${birthDate.toDate}`
+    : noDataLabel;
+  const genderValue = gender
+    ? genderNumberToLabelMapping[gender.value]
+    : noDataLabel;
 
   return {
     email: { label: 'Email', value: emailValue },
@@ -63,10 +72,14 @@ function mapOrderFilter(
 ): MappedFilter<Exclude<Filters['order'], null>> {
   const { date, status, ordersCount, ordersPriceSum } = order;
 
-  const dateValue = `${date.fromDate} - ${date.toDate}`;
-  const statusValue = orderStatues[status.value];
-  const ordersCountValue = `${ordersCount.fromValue} - ${ordersCount.toValue}`;
-  const ordersPriceSumValue = `${ordersPriceSum.fromValue} - ${ordersPriceSum.toValue}`;
+  const dateValue = date ? `${date.fromDate} - ${date.toDate}` : noDataLabel;
+  const statusValue = status ? orderStatues[status.value] : noDataLabel;
+  const ordersCountValue = ordersCount
+    ? `${ordersCount.fromValue} - ${ordersCount.toValue}`
+    : noDataLabel;
+  const ordersPriceSumValue = ordersPriceSum
+    ? `${ordersPriceSum.fromValue} - ${ordersPriceSum.toValue}`
+    : noDataLabel;
 
   return {
     date: { label: 'Дата заказа', value: dateValue },
@@ -84,19 +97,17 @@ function mapLoyaltyFilter(
   return {
     level: {
       label: 'Уровень лояльности',
-      value: level.value,
+      value: level ? level.value : noDataLabel,
     },
     status: {
       label: 'Статус лояльности',
-      value: loyaltyProgramStatuses[status.value],
+      value: status ? loyaltyProgramStatuses[status.value] : noDataLabel,
     },
     amountOfBonuses: {
       label: 'Количество бонусов',
-      value: `${amountOfBonuses.fromValue} - ${amountOfBonuses.toValue}`,
+      value: amountOfBonuses
+        ? `${amountOfBonuses.fromValue} - ${amountOfBonuses.toValue}`
+        : noDataLabel,
     },
   };
-}
-
-function getSexValue(value: 1 | 2) {
-  return value === 1 ? 'Мужской' : 'Женский';
 }

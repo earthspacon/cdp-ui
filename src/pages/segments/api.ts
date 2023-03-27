@@ -21,34 +21,36 @@ const IsEmptySchema = z.object({
 });
 
 const SegmentsListSchema = z.object({
-  segments: z.array(
+  array: z.array(
     z.object({
       id: z.string(),
-      createdAt: z.string(),
+      createdAt: z.string().nullable(),
       name: z.string(),
       code: z.string(),
       filters: z.object({
         customer: z
           .object({
-            email: IsEmptySchema,
-            gender: z.object({ value: z.literal(1).or(z.literal(2)) }),
-            phoneNumber: IsEmptySchema,
-            birthDate: FromDateToDateSchema,
+            email: IsEmptySchema.nullable(),
+            gender: z
+              .object({ value: z.literal(1).or(z.literal(2)) })
+              .nullable(),
+            phoneNumber: IsEmptySchema.nullable(),
+            birthDate: FromDateToDateSchema.nullable(),
           })
           .nullable(),
         order: z
           .object({
-            date: FromDateToDateSchema,
-            status: z.object({ value: StatusSchema }),
-            ordersCount: FromToSchema,
-            ordersPriceSum: FromToSchema,
+            date: FromDateToDateSchema.nullable(),
+            status: z.object({ value: StatusSchema }).nullable(),
+            ordersCount: FromToSchema.nullable(),
+            ordersPriceSum: FromToSchema.nullable(),
           })
           .nullable(),
         loyalty: z
           .object({
-            level: z.object({ value: z.string() }),
-            status: z.object({ value: LoyaltyProgramStatusSchema }),
-            amountOfBonuses: FromToSchema,
+            level: z.object({ value: z.string() }).nullable(),
+            status: z.object({ value: LoyaltyProgramStatusSchema }).nullable(),
+            amountOfBonuses: FromToSchema.nullable(),
           })
           .nullable(),
       }),
@@ -58,7 +60,7 @@ const SegmentsListSchema = z.object({
 });
 
 export type SegmentsList = z.infer<typeof SegmentsListSchema>;
-export type Segment = SegmentsList['segments'][number];
+export type Segment = SegmentsList['array'][number];
 export type Filters = Segment['filters'];
 
 export const segmentsListQuery = createQuery({

@@ -1,20 +1,40 @@
-import dayjs from 'dayjs';
-import { createStore, sample } from 'effector';
-import { debug } from 'patronum';
+import { createEvent, createStore, sample } from 'effector';
+import { Field } from 'effector-forms';
 
-import { createLoyaltyLevelsQuery } from '@/shared/api/segments';
+import {
+  createLoyaltyLevelsQuery,
+  CreateSegmentBody,
+  createSegmentCreationMutation,
+} from '@/shared/api/segments';
 import { routes } from '@/shared/config/routing';
-import { toLabelValueArray, translitToLatin } from '@/shared/lib/mappers';
+import {
+  filterNullValues,
+  toLabelValueArray,
+  translitToLatin,
+} from '@/shared/lib/mappers';
+import { notifyError } from '@/shared/lib/notification';
 import { LabelValue } from '@/shared/types/utility';
 
-import { segmentCreationForm } from './form';
+import {
+  getGenderValue,
+  getLoyaltyStatusValue,
+  getOrderStatusValue,
+  toDateRange,
+  toIsEmptyObject,
+  toValuesRange,
+} from '../lib/mappers';
+import { checkIsStringValid } from '../lib/validation';
+import { formFields, segmentCreationForm } from './form';
 import { loadCreateSegmentPageFx } from './lazy-load';
 
 export const loyaltyLevelsQuery = createLoyaltyLevelsQuery();
+export const createSegmentMutation = createSegmentCreationMutation();
 
 export const $segmentCode =
   segmentCreationForm.fields.segmentName.$value.map(translitToLatin);
 export const $loyaltyLevelOptions = createStore<LabelValue<string>[]>([]);
+
+export const cancelClicked = createEvent();
 
 // Fetching loyalty levels
 {
@@ -35,27 +55,117 @@ export const $loyaltyLevelOptions = createStore<LabelValue<string>[]>([]);
 
 // Trigger validation on form values change
 {
-  // sample({
-  //   clock: segmentCreationForm.$values.updates,
-  //   target: segmentCreationForm.validate,
-  // });
+  const fieldsToValidateAndCompare = [
+    {
+      firstField: formFields.birthDateFrom,
+      secondField: formFields.birthDateTo,
+    },
+    {
+      firstField: formFields.ordersNumberFrom,
+      secondField: formFields.ordersNumberTo,
+    },
+    {
+      firstField: formFields.ordersTotalFrom,
+      secondField: formFields.ordersTotalTo,
+    },
+    {
+      firstField: formFields.purchaseDateRangeFrom,
+      secondField: formFields.purchaseDateRangeTo,
+    },
+    {
+      firstField: formFields.bonusesBalanceFrom,
+      secondField: formFields.bonusesBalanceTo,
+    },
+  ];
 
+  fieldsToValidateAndCompare.forEach((fields) => {
+    validateOnFieldUpdates(fields as FieldsToValidate);
+  });
+}
+
+// Post segment
+{
   sample({
-    clock: [
-      segmentCreationForm.fields.birthDateFrom.$value.updates,
-      segmentCreationForm.fields.birthDateTo.$value.updates,
-    ],
-    target: [
-      segmentCreationForm.fields.birthDateFrom.validate,
-      segmentCreationForm.fields.birthDateTo.validate,
-    ],
+    clock: segmentCreationForm.formValidated,
+    source: $segmentCode,
+    fn(segmentCode, values): CreateSegmentBody {
+      const genderValue = values.gender;
+      const loyaltyLevel = values.loyaltyProgramLevel;
+
+      const customer = {
+        email: toIsEmptyObject(values.email),
+        gender: getGenderValue(genderValue),
+        phoneNumber: toIsEmptyObject(values.phoneNumber),
+        birthDate: toDateRange(values.birthDateFrom, values.birthDateTo),
+      };
+
+      const order = {
+        date: toDateRange(
+          values.purchaseDateRangeFrom,
+          values.purchaseDateRangeTo,
+        ),
+        status: getOrderStatusValue(values.ordersStatus),
+        ordersCount: toValuesRange(
+          values.ordersNumberFrom,
+          values.ordersNumberTo,
+        ),
+        ordersPriceSum: toValuesRange(
+          values.ordersTotalFrom,
+          values.ordersTotalTo,
+        ),
+      };
+
+      const loyalty = {
+        level: checkIsStringValid(loyaltyLevel) ? loyaltyLevel : null,
+        status: getLoyaltyStatusValue(values.loyaltyProgramStatus),
+        amountOfBonuses: toValuesRange(
+          values.bonusesBalanceFrom,
+          values.bonusesBalanceTo,
+        ),
+      };
+
+      const filters = {
+        customer: filterNullValues(customer),
+        order: filterNullValues(order),
+        loyalty: filterNullValues(loyalty),
+      };
+
+      return {
+        name: values.segmentName,
+        code: segmentCode,
+        filters,
+      };
+    },
+    target: createSegmentMutation.start,
+  });
+}
+
+// Redirect to segments page and reset form on cancel and success
+{
+  sample({
+    clock: [createSegmentMutation.finished.success, cancelClicked],
+    target: [routes.segments.open, segmentCreationForm.reset],
   });
 }
 
 sample({
-  clock: segmentCreationForm.formValidated,
-  filter: segmentCreationForm.$eachValid,
-  fn(values) {
-    console.log({ values });
-  },
+  clock: createSegmentMutation.finished.failure,
+  fn: () => ({ message: 'Не удалось создать сегмент' }),
+  target: notifyError,
 });
+
+type FieldsToValidate = {
+  firstField: Field<unknown>;
+  secondField: Field<unknown>;
+};
+function validateOnFieldUpdates({ firstField, secondField }: FieldsToValidate) {
+  sample({
+    clock: secondField.$value.updates,
+    target: firstField.validate,
+  });
+
+  sample({
+    clock: firstField.$value.updates,
+    target: secondField.validate,
+  });
+}

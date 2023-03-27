@@ -140,25 +140,20 @@ function FilterParameters({
   const { customer, loyalty, order } = params.row.filters;
   return (
     <Stack width="100%" spacing={0}>
-      {customer && (
-        <FilterParamDropDown title="Покупатель" filterParam={customer} />
-      )}
-      {loyalty && <FilterParamDropDown title="Заказ" filterParam={loyalty} />}
-      {order && (
-        <FilterParamDropDown title="Программа лояльности" filterParam={order} />
-      )}
+      <FilterParamDropDown title="Покупатель" filterParam={customer} />
+      <FilterParamDropDown title="Заказ" filterParam={loyalty} />
+      <FilterParamDropDown title="Программа лояльности" filterParam={order} />
     </Stack>
   );
 }
 
-type FilterParamProp = {
-  filterParam: Record<string, LabelValue<string>>;
-};
-
 function FilterParamDropDown({
   title,
   filterParam,
-}: { title: string } & FilterParamProp) {
+}: {
+  title: string;
+  filterParam: Record<string, LabelValue<string>> | null;
+}) {
   const [open, setOpen] = useState(false);
 
   return (
@@ -172,12 +167,16 @@ function FilterParamDropDown({
 
       <Collapse in={open}>
         <Stack width="100%" spacing={1} pl={3} pt={1}>
-          {Object.values(filterParam).map(({ label, value }) => (
-            <FilterItem key={label}>
-              <FilterTitle>{label}</FilterTitle>
-              <Typography>{value}</Typography>
-            </FilterItem>
-          ))}
+          {filterParam ? (
+            Object.values(filterParam).map(({ label, value }) => (
+              <FilterItem key={label}>
+                <FilterTitle>{label}</FilterTitle>
+                <Typography>{value}</Typography>
+              </FilterItem>
+            ))
+          ) : (
+            <NoData />
+          )}
         </Stack>
       </Collapse>
     </>

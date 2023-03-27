@@ -1,27 +1,12 @@
-import { createQuery } from '@farfetched/core';
-import { zodContract } from '@farfetched/zod';
-import { createEffect } from 'effector';
 import { z } from 'zod';
 
-import { API_INSTANCE } from '../config/api-instance';
-import { LabelValue } from '../types/utility';
+import { LabelValue } from '@/shared/types/utility';
 
 export const LoyaltyProgramLevelSchema = z.object({
   statuses: z.array(z.string()),
 });
-type LoyaltyProgramLevel = z.infer<typeof LoyaltyProgramLevelSchema>;
 
-export function createLoyaltyLevelsQuery() {
-  return createQuery({
-    effect: createEffect(async () => {
-      const response = await API_INSTANCE.get<LoyaltyProgramLevel>(
-        '/management-service/loyalty/statuses',
-      );
-      return response.data;
-    }),
-    contract: zodContract(LoyaltyProgramLevelSchema),
-  });
-}
+export type LoyaltyProgramLevel = z.infer<typeof LoyaltyProgramLevelSchema>;
 
 export const LoyaltyProgramStatusSchema = z
   .literal('ACTIVATED')
@@ -35,6 +20,7 @@ export const loyaltyProgramStatuses = {
   ACTIVATED: 'Активирован',
   DEACTIVATED: 'Деактивирован',
 };
+
 export const loyaltyProgramStatusOptions = Object.entries(
   loyaltyProgramStatuses,
 ).map(([value, label]) => ({
@@ -47,23 +33,41 @@ export const hasValueMapping = {
   EMPTY: 'Пусто',
   NOT_EMPTY: 'Не пусто',
 };
+
+export type HasValueMappingValue = keyof typeof hasValueMapping;
+
 export const hasValueBooleanMapping = {
   EMPTY: true,
   NOT_EMPTY: false,
 };
+
 export const hasValueBoolToLabelMapping = {
   true: hasValueMapping.EMPTY,
   false: hasValueMapping.NOT_EMPTY,
 };
+
 export const hasValueOptions = Object.entries(hasValueMapping).map(
   ([value, label]) => ({ value, label }),
-) as LabelValue<keyof typeof hasValueMapping>[];
+) as LabelValue<HasValueMappingValue>[];
 
 export const genderMapping = {
   UNDEFINED: 'Не задано',
   MALE: 'Мужской',
   FEMALE: 'Женский',
 };
+
+export const genderNumberMapping = {
+  MALE: 1,
+  FEMALE: 2,
+};
+
+export const genderNumberToLabelMapping = {
+  1: genderMapping.MALE,
+  2: genderMapping.FEMALE,
+};
+
+export type GenderMAppingValue = keyof typeof genderMapping;
+
 export const genderOptions = Object.entries(genderMapping).map(
   ([value, label]) => ({ value, label }),
-) as LabelValue<keyof typeof genderMapping>[];
+) as LabelValue<GenderMAppingValue>[];

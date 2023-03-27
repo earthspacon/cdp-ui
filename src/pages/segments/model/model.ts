@@ -1,7 +1,7 @@
 import { cache } from '@farfetched/core';
 import { redirect } from 'atomic-router';
 import { createEffect, createEvent, createStore, sample } from 'effector';
-import { spread } from 'patronum';
+import { debug, spread } from 'patronum';
 
 import { routes } from '@/shared/config/routing';
 import { InferStoreValues } from '@/shared/types/utility';
@@ -53,7 +53,7 @@ const startFetchingCustomersCountFx = createEffect((segmentIds: string[]) => {
 
   sample({
     clock: segmentsListQuery.finished.success,
-    fn({ result: { segments, totalRecordsCount } }) {
+    fn({ result: { array: segments, totalRecordsCount } }) {
       const mappedSegments = mapSegments(segments);
       const segmentIds = mappedSegments.map((segment) => segment.id);
 
@@ -71,6 +71,8 @@ const startFetchingCustomersCountFx = createEffect((segmentIds: string[]) => {
       },
     }),
   });
+
+  debug({ fail: segmentsListQuery.$error });
 
   sample({
     clock: startFetchingCustomersCountFx.doneData,

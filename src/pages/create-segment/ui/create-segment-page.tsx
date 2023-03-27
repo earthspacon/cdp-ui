@@ -15,18 +15,18 @@ import { FormInput } from '@/shared/ui/form-control/form-input';
 import { FormSelect } from '@/shared/ui/form-control/form-select';
 import { LoadingButton } from '@/shared/ui/loading-button';
 
-import { segmentCreationForm } from '../model/form';
+import { formFields, segmentCreationForm } from '../model/form';
 import {
   $loyaltyLevelOptions,
   $segmentCode,
+  cancelClicked,
+  createSegmentMutation,
   loyaltyLevelsQuery,
 } from '../model/model';
 
 const inputsWidth = '250px';
 const inputsWidthProp = { width: inputsWidth };
 const dateFormat = 'DD/MM/YYYY';
-
-const formFields = segmentCreationForm.fields;
 
 // eslint-disable-next-line import/no-default-export
 export default function CreateSegmentPage() {
@@ -56,15 +56,23 @@ export default function CreateSegmentPage() {
 
 function Actions() {
   const { submit, eachValid } = useForm(segmentCreationForm);
+  const { isSubmitting } = useUnit({
+    isSubmitting: createSegmentMutation.$pending,
+  });
 
   return (
     <Stack spacing={8} direction="row" justifyContent="center" pb={2}>
-      <Button variant="contained" color="error" size="large">
+      <Button
+        variant="contained"
+        color="error"
+        size="large"
+        onClick={() => cancelClicked()}
+      >
         Отменить
       </Button>
 
       <LoadingButton
-        loading={false}
+        loading={isSubmitting}
         disabled={!eachValid}
         variant="contained"
         size="large"
@@ -165,6 +173,7 @@ function OrdersInputs() {
               field={ordersNumberFromField}
               textFieldProps={{
                 label: 'Количество заказов (от)',
+                type: 'number',
                 sx: inputsWidthProp,
               }}
             />
@@ -175,6 +184,7 @@ function OrdersInputs() {
               field={ordersNumberToField}
               textFieldProps={{
                 label: 'Количество заказов (до)',
+                type: 'number',
                 sx: inputsWidthProp,
               }}
             />
@@ -185,6 +195,7 @@ function OrdersInputs() {
               field={ordersTotalFromField}
               textFieldProps={{
                 label: 'Сумма заказов (от)',
+                type: 'number',
                 sx: inputsWidthProp,
               }}
             />
@@ -195,6 +206,7 @@ function OrdersInputs() {
               field={ordersTotalToField}
               textFieldProps={{
                 label: 'Сумма заказов (до)',
+                type: 'number',
                 sx: inputsWidthProp,
               }}
             />
@@ -266,6 +278,7 @@ function LoyaltyProgramInputs() {
               field={bonusesBalanceFromField}
               textFieldProps={{
                 label: 'Баланс бонусов (от)',
+                type: 'number',
                 sx: inputsWidthProp,
               }}
             />
@@ -276,6 +289,7 @@ function LoyaltyProgramInputs() {
               field={bonusesBalanceToField}
               textFieldProps={{
                 label: 'Баланс бонусов (до)',
+                type: 'number',
                 sx: inputsWidthProp,
               }}
             />

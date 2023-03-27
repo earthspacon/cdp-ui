@@ -1,11 +1,15 @@
-import dayjs from 'dayjs';
 import { createForm } from 'effector-forms';
-import { z } from 'zod';
 
+import {
+  GenderMAppingValue,
+  HasValueMappingValue,
+  LoyaltyProgramStatus,
+} from '@/shared/api/segments';
+import { OrderStatus } from '@/shared/api/status-mappings';
 import { createRule } from '@/shared/lib/validation-rules/create-rule';
 import { FormDate } from '@/shared/types/utility';
 
-const requiredText = 'Поле обязательно для заполнения';
+import { getRuleToValidateByField, requiredString } from '../lib/validation';
 
 export const segmentCreationForm = createForm({
   fields: {
@@ -14,18 +18,18 @@ export const segmentCreationForm = createForm({
       rules: [createRule({ name: 'segmentName', schema: requiredString() })],
     },
     email: {
-      init: '',
+      init: '' as HasValueMappingValue | '',
     },
     gender: {
-      init: '',
+      init: '' as GenderMAppingValue | '',
     },
     phoneNumber: {
-      init: '',
+      init: '' as HasValueMappingValue | '',
     },
     birthDateFrom: {
       init: null as FormDate,
       rules(_, form) {
-        return validateByAnotherField({
+        return getRuleToValidateByField({
           field: form.birthDateTo,
           name: 'birthDateFrom',
           type: 'date',
@@ -35,7 +39,7 @@ export const segmentCreationForm = createForm({
     birthDateTo: {
       init: null as FormDate,
       rules(_, form) {
-        return validateByAnotherField({
+        return getRuleToValidateByField({
           field: form.birthDateFrom,
           name: 'birthDateTo',
           type: 'date',
@@ -46,7 +50,7 @@ export const segmentCreationForm = createForm({
     ordersNumberFrom: {
       init: '',
       rules(_, form) {
-        return validateByAnotherField({
+        return getRuleToValidateByField({
           field: form.ordersNumberTo,
           name: 'ordersNumberFrom',
           type: 'string',
@@ -56,7 +60,7 @@ export const segmentCreationForm = createForm({
     ordersNumberTo: {
       init: '',
       rules(_, form) {
-        return validateByAnotherField({
+        return getRuleToValidateByField({
           field: form.ordersNumberFrom,
           name: 'ordersNumberTo',
           type: 'string',
@@ -66,7 +70,7 @@ export const segmentCreationForm = createForm({
     ordersTotalFrom: {
       init: '',
       rules(_, form) {
-        return validateByAnotherField({
+        return getRuleToValidateByField({
           field: form.ordersTotalTo,
           name: 'ordersTotalFrom',
           type: 'string',
@@ -76,7 +80,7 @@ export const segmentCreationForm = createForm({
     ordersTotalTo: {
       init: '',
       rules(_, form) {
-        return validateByAnotherField({
+        return getRuleToValidateByField({
           field: form.ordersTotalFrom,
           name: 'ordersTotalTo',
           type: 'string',
@@ -84,12 +88,12 @@ export const segmentCreationForm = createForm({
       },
     },
     ordersStatus: {
-      init: '',
+      init: '' as OrderStatus | '',
     },
     purchaseDateRangeFrom: {
       init: null as FormDate,
       rules(_, form) {
-        return validateByAnotherField({
+        return getRuleToValidateByField({
           field: form.purchaseDateRangeTo,
           name: 'purchaseDateRangeFrom',
           type: 'date',
@@ -99,7 +103,7 @@ export const segmentCreationForm = createForm({
     purchaseDateRangeTo: {
       init: null as FormDate,
       rules(_, form) {
-        return validateByAnotherField({
+        return getRuleToValidateByField({
           field: form.purchaseDateRangeFrom,
           name: 'purchaseDateRangeTo',
           type: 'date',
@@ -111,12 +115,12 @@ export const segmentCreationForm = createForm({
       init: '',
     },
     loyaltyProgramStatus: {
-      init: '',
+      init: '' as LoyaltyProgramStatus | '',
     },
     bonusesBalanceFrom: {
       init: '',
       rules(_, form) {
-        return validateByAnotherField({
+        return getRuleToValidateByField({
           field: form.bonusesBalanceTo,
           name: 'bonusesBalanceFrom',
           type: 'string',
@@ -126,7 +130,7 @@ export const segmentCreationForm = createForm({
     bonusesBalanceTo: {
       init: '',
       rules(_, form) {
-        return validateByAnotherField({
+        return getRuleToValidateByField({
           field: form.bonusesBalanceFrom,
           name: 'purchaseDateRangeTo',
           type: 'string',
@@ -137,36 +141,4 @@ export const segmentCreationForm = createForm({
   validateOn: ['submit', 'blur', 'change'],
 });
 
-function validateByAnotherField<Value>({
-  field,
-  name,
-  type,
-}: {
-  field: Value;
-  name: string;
-  type: 'string' | 'date';
-}) {
-  const schema = type === 'string' ? requiredString() : requiredDate();
-  const isFieldValid =
-    type === 'string' ? checkIsStringValid(field) : checkIsDateValid(field);
-
-  return isFieldValid ? [createRule({ name, schema })] : [];
-}
-
-function requiredString() {
-  return z.string().min(1, { message: requiredText });
-}
-
-function requiredDate() {
-  return z.custom((value) => checkIsDateValid(value), {
-    message: requiredText,
-  });
-}
-
-export function checkIsDateValid(date: unknown) {
-  return dayjs.isDayjs(date) && date.isValid();
-}
-
-export function checkIsStringValid(value: unknown) {
-  return typeof value === 'string' && value.trim().length > 0;
-}
+export const formFields = segmentCreationForm.fields;

@@ -1,4 +1,4 @@
-import { LabelValue } from '../types/utility';
+import { LabelValue, WithFilteredKeys } from '../types/utility';
 
 // DANGEROUS: DO NOT CHANGE ORDER OF LETTERS!
 const ruToEnLetters = [
@@ -62,4 +62,17 @@ export function toLabelValueArray(
   stringsArray: string[],
 ): LabelValue<string>[] {
   return stringsArray.map((value) => ({ value, label: value }));
+}
+
+export function filterNullValues<T extends object>(
+  object: T,
+): WithFilteredKeys<T, null> | null {
+  const filteredObject = Object.fromEntries(
+    Object.entries(object).filter(([, value]) => value !== null),
+  ) as T;
+
+  if (Object.keys(filteredObject).length === 0) {
+    return null;
+  }
+  return filteredObject;
 }
