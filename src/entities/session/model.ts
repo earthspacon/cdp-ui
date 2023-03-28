@@ -16,7 +16,7 @@ import { API_INSTANCE } from '@/shared/config/api-instance';
 import { routes } from '@/shared/config/routing';
 import { EffectorStorageCookieAdapter } from '@/shared/lib/effector-storage-cookie-adapter';
 
-import { getAccessTokenByRefreshTokenFx } from './api';
+import { getAuthTokensByRefreshTokenFx } from './api';
 
 declare module 'axios' {
   export interface AxiosRequestConfig {
@@ -32,6 +32,7 @@ class AuthTokens {
 }
 
 const $authTokens = createStore(new AuthTokens());
+
 persist({
   store: $authTokens,
   adapter: EffectorStorageCookieAdapter,
@@ -47,7 +48,7 @@ export const login = createEvent<AuthTokens>();
 
 export const getRefreshTokenFx = attach({
   source: $authTokens,
-  effect: getAccessTokenByRefreshTokenFx,
+  effect: getAuthTokensByRefreshTokenFx,
   mapParams: (_: void, { refreshToken }) => ({ refreshToken }),
 });
 const retryRequestAfter401Fx = createEffect(
@@ -68,11 +69,6 @@ sample({
 
 sample({
   clock: getRefreshTokenFx.doneData,
-  source: $authTokens,
-  fn: (prevTokens, { accessToken }) => ({
-    accessToken,
-    refreshToken: prevTokens.refreshToken, // FIX refresh token is not changed
-  }),
   target: $authTokens,
 });
 

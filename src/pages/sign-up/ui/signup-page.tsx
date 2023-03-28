@@ -27,7 +27,10 @@ export default function SignUpPage() {
     <Centered>
       <LoginWrapper onSubmit={onSubmit}>
         <InputsWrapper>
-          <FormInput field={fields.email} textFieldProps={{ label: 'Email' }} />
+          <FormInput
+            field={fields.email}
+            textFieldProps={{ label: 'Email', type: 'email' }}
+          />
           <FormInput
             field={fields.password}
             textFieldProps={{ label: 'Пароль', type: 'password' }}
