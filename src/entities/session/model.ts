@@ -9,7 +9,7 @@ import {
 } from 'effector';
 import { persist } from 'effector-storage';
 import Cookies from 'js-cookie';
-import { not, or } from 'patronum';
+import { and, not, or } from 'patronum';
 
 import { AuthTokensSchema } from '@/shared/api/auth';
 import { API_INSTANCE } from '@/shared/config/api-instance';
@@ -78,10 +78,20 @@ sample({
 });
 
 export function checkSession({ event }: { event: Event<void> }) {
+  const $isNotAuthPage = not(
+    or(routes.login.$isOpened, routes.signUp.$isOpened),
+  );
+
   sample({
     clock: event,
-    filter: not(or(routes.login.$isOpened, routes.signUp.$isOpened)),
+    filter: and($isNotAuthPage, $isAuthorized),
     target: getRefreshTokenFx,
+  });
+
+  sample({
+    clock: event,
+    filter: and($isNotAuthPage, not($isAuthorized)),
+    target: logout,
   });
 }
 
@@ -107,16 +117,18 @@ export function setApiInstanceInterceptors({
         const originalConfig = error.config;
         if (!originalConfig) return Promise.reject(error);
 
-        if (!originalConfig?.url?.includes('sign-in') && error.response) {
-          if (error.response.status === 401 && !originalConfig._retry) {
-            originalConfig._retry = true;
+        if (
+          error.response &&
+          error.response.status === 401 &&
+          !originalConfig._retry
+        ) {
+          originalConfig._retry = true;
 
-            try {
-              await getRefreshTokenFx();
-              await retryRequestAfter401Fx(() => API_INSTANCE(originalConfig));
-            } catch (err) {
-              Promise.reject(err);
-            }
+          try {
+            await getRefreshTokenFx();
+            await retryRequestAfter401Fx(() => API_INSTANCE(originalConfig));
+          } catch (err) {
+            Promise.reject(err);
           }
         }
 
