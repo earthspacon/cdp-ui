@@ -64,7 +64,7 @@ export default function IntegrationPage() {
             Загрузить каталог
             <input
               hidden
-              accept=".yml"
+              accept=".xml"
               type="file"
               value={fileInputValue}
               onChange={(evt) => fileUploaded(evt.target.files)}

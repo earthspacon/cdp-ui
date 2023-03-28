@@ -100,13 +100,13 @@ const copyTokenFx = attach({
 {
   sample({
     clock: fileUploaded,
-    filter: isFileListYml,
+    filter: isSupportedFileType,
     fn: (fileList) => fileList?.[0] as File,
     target: uploadCatalogMutation.start,
   });
   sample({
     clock: fileUploaded,
-    filter: (fileList) => !isFileListYml(fileList),
+    filter: (fileList) => !isSupportedFileType(fileList),
     fn: () => ({ message: 'Неверный формат файла' }),
     target: notifyError,
   });
@@ -181,6 +181,6 @@ const historyStatuses = {
   FAILED: 'Произошла ошибка',
 };
 
-function isFileListYml(fileList: FileList | null) {
-  return fileList?.[0]?.name?.endsWith('.yml') === true;
+function isSupportedFileType(fileList: FileList | null) {
+    return fileList?.[0]?.name?.endsWith('.xml') === true;
 }
