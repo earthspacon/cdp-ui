@@ -14,7 +14,7 @@ const CatalogHistorySchema = z.object({
       status: z
         .literal('IN_PROGRESS')
         .or(z.literal('SUCCESS').or(z.literal('FAILED'))),
-      errorDetails: z.string(),
+      errorDetails: z.nullable(z.string()),
     }),
   ),
   totalRecordsCount: z.number(),

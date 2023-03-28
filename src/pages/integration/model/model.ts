@@ -88,6 +88,13 @@ const copyTokenFx = attach({
   });
 
   sample({
+      clock: catalogHistoryQuery.finished.failure,
+      fn: ( {error} ) => {
+        console.log("Failed to load the upload history: ", error);
+      }
+    });
+
+  sample({
     clock: getApiTokenQuery.finished.success,
     fn: ({ result: apiToken }) => {
       if (apiToken.length === 0) {
@@ -121,27 +128,17 @@ const copyTokenFx = attach({
 
 // Handling catalog upload
 {
-  update(catalogHistoryQuery, {
-    on: uploadCatalogMutation,
-    by: {
-      success: () => ({
-        result: { history: [], totalRecordsCount: 0 },
-        refetch: true,
-      }),
-    },
-  });
-
   sample({
     clock: uploadCatalogMutation.finished.success,
     fn: () => {
       return;
     },
-    target: getApiTokenQuery.start,
+    target: catalogHistoryQuery.start,
   });
 
   sample({
     clock: uploadCatalogMutation.finished.success,
-    fn: () => ({ message: 'Каталог успешно загружен' }),
+    fn: () => ({ message: 'Загруженный файл находится в процессе обработки' }),
     target: notifySuccess,
   });
   sample({
