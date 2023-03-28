@@ -3,7 +3,7 @@ import {
   hasValueBoolToLabelMapping,
   loyaltyProgramStatuses,
 } from '@/shared/api/segments';
-import { orderStatues } from '@/shared/api/status-mappings';
+import { orderStatuses } from '@/shared/api/status-mappings';
 import { LabelValue } from '@/shared/types/utility';
 
 import { Filters, Segment } from './api';
@@ -73,7 +73,7 @@ function mapOrderFilter(
   const { date, status, ordersCount, ordersPriceSum } = order;
 
   const dateValue = date ? `${date.fromDate} - ${date.toDate}` : noDataLabel;
-  const statusValue = status ? orderStatues[status.value] : noDataLabel;
+  const statusValue = status ? orderStatuses[status.value] : noDataLabel;
   const ordersCountValue = ordersCount
     ? `${ordersCount.fromValue} - ${ordersCount.toValue}`
     : noDataLabel;

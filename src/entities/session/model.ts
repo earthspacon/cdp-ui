@@ -9,14 +9,14 @@ import {
 } from 'effector';
 import { persist } from 'effector-storage';
 import Cookies from 'js-cookie';
-import { not, or } from 'patronum';
+import { and, not, or } from 'patronum';
 
 import { AuthTokensSchema } from '@/shared/api/auth';
 import { API_INSTANCE } from '@/shared/config/api-instance';
 import { routes } from '@/shared/config/routing';
 import { EffectorStorageCookieAdapter } from '@/shared/lib/effector-storage-cookie-adapter';
 
-import { getAccessTokenByRefreshTokenFx } from './api';
+import { getAuthTokensByRefreshTokenFx } from './api';
 
 declare module 'axios' {
   export interface AxiosRequestConfig {
@@ -32,6 +32,7 @@ class AuthTokens {
 }
 
 const $authTokens = createStore(new AuthTokens());
+
 persist({
   store: $authTokens,
   adapter: EffectorStorageCookieAdapter,
@@ -47,7 +48,7 @@ export const login = createEvent<AuthTokens>();
 
 export const getRefreshTokenFx = attach({
   source: $authTokens,
-  effect: getAccessTokenByRefreshTokenFx,
+  effect: getAuthTokensByRefreshTokenFx,
   mapParams: (_: void, { refreshToken }) => ({ refreshToken }),
 });
 const retryRequestAfter401Fx = createEffect(
@@ -68,11 +69,6 @@ sample({
 
 sample({
   clock: getRefreshTokenFx.doneData,
-  source: $authTokens,
-  fn: (prevTokens, { accessToken }) => ({
-    accessToken,
-    refreshToken: prevTokens.refreshToken, // FIX refresh token is not changed
-  }),
   target: $authTokens,
 });
 
@@ -82,10 +78,20 @@ sample({
 });
 
 export function checkSession({ event }: { event: Event<void> }) {
+  const $isNotAuthPage = not(
+    or(routes.login.$isOpened, routes.signUp.$isOpened),
+  );
+
   sample({
     clock: event,
-    filter: not(or(routes.login.$isOpened, routes.signUp.$isOpened)),
+    filter: and($isNotAuthPage, $isAuthorized),
     target: getRefreshTokenFx,
+  });
+
+  sample({
+    clock: event,
+    filter: and($isNotAuthPage, not($isAuthorized)),
+    target: logout,
   });
 }
 
@@ -111,16 +117,18 @@ export function setApiInstanceInterceptors({
         const originalConfig = error.config;
         if (!originalConfig) return Promise.reject(error);
 
-        if (!originalConfig?.url?.includes('sign-in') && error.response) {
-          if (error.response.status === 401 && !originalConfig._retry) {
-            originalConfig._retry = true;
+        if (
+          error.response &&
+          error.response.status === 401 &&
+          !originalConfig._retry
+        ) {
+          originalConfig._retry = true;
 
-            try {
-              await getRefreshTokenFx();
-              await retryRequestAfter401Fx(() => API_INSTANCE(originalConfig));
-            } catch (err) {
-              Promise.reject(err);
-            }
+          try {
+            await getRefreshTokenFx();
+            await retryRequestAfter401Fx(() => API_INSTANCE(originalConfig));
+          } catch (err) {
+            Promise.reject(err);
           }
         }
 

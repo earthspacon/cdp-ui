@@ -6,11 +6,11 @@ import {
   ApiStatusMappings,
   createSaveStatusMappingsMutation,
   createStatusMappingsQuery,
-  orderStatues,
   OrderStatus,
+  orderStatuses,
 } from '@/shared/api/status-mappings';
 import { routes } from '@/shared/config/routing';
-import { notifyError } from '@/shared/lib/notification';
+import { notifyError, notifySuccess } from '@/shared/lib/notification';
 
 import { loadSettingsPageFx } from './lazy-load';
 
@@ -56,14 +56,14 @@ export const saveStatusMappingsMutation = createSaveStatusMappingsMutation();
 
   $statusMappings.on(
     statusMappingsQuery.finished.success,
-    (prevStatusMappings, { result: mappings }) => {
+    (prevStatusMappings, { result: { mappings } }) => {
       if (prevStatusMappings.length > 0) {
         return prevStatusMappings;
       } else {
-        return mappings.mappings.map((mapping) => ({
+        return mappings.map((mapping) => ({
           ...mapping,
           id: uuid(),
-          cdpStatusLabel: orderStatues[mapping.cdpStatus],
+          cdpStatusLabel: orderStatuses[mapping.cdpStatus],
         }));
       }
     },
@@ -78,7 +78,7 @@ export const saveStatusMappingsMutation = createSaveStatusMappingsMutation();
         ? {
             ...mapping,
             cdpStatus: status,
-            cdpStatusLabel: orderStatues[status],
+            cdpStatusLabel: orderStatuses[status],
           }
         : mapping,
     );
@@ -102,7 +102,7 @@ export const saveStatusMappingsMutation = createSaveStatusMappingsMutation();
       id: uuid(),
       externalStatus: '',
       cdpStatus: 'NO_STATUS' as const,
-      cdpStatusLabel: orderStatues.NO_STATUS,
+      cdpStatusLabel: orderStatuses.NO_STATUS,
     };
 
     return [...prevStatuses, newStatusMapping];
@@ -163,6 +163,12 @@ export const saveStatusMappingsMutation = createSaveStatusMappingsMutation();
     by: { success: () => ({ result: { mappings: [] }, refetch: true }) },
   });
 }
+
+sample({
+  clock: saveStatusMappingsMutation.finished.success,
+  fn: () => ({ message: 'Статусы успешно сохранены' }),
+  target: notifySuccess,
+});
 
 function isExternalStatusValid(externalStatus: string) {
   return externalStatus.trim().length > 0;

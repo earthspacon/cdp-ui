@@ -1,4 +1,5 @@
 import { createMutation } from '@farfetched/core';
+import axios from 'axios';
 import { createEffect } from 'effector';
 
 import { AuthTokens, authTokensContract } from '@/shared/api/auth';
@@ -11,9 +12,15 @@ type LoginParams = {
 
 export const loginMutation = createMutation({
   effect: createEffect(async (params: LoginParams) => {
-    const response = await API_INSTANCE.post<AuthTokens>(
+    const response = await axios.post<AuthTokens>(
       '/management-service/shop/admin/signin',
       params,
+      {
+        baseURL: API_INSTANCE.defaults.baseURL,
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      },
     );
     return response.data;
   }),

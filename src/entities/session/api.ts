@@ -1,14 +1,21 @@
+import axios from 'axios';
 import { createEffect } from 'effector';
 
-import { AccessToken, AccessTokenSchema } from '@/shared/api/auth';
+import { AuthTokens, AuthTokensSchema } from '@/shared/api/auth';
 import { API_INSTANCE } from '@/shared/config/api-instance';
 
-export const getAccessTokenByRefreshTokenFx = createEffect(
-  async ({ refreshToken }: { refreshToken: string }) => {
-    const { data } = await API_INSTANCE.post<AccessToken>(
+export const getAuthTokensByRefreshTokenFx = createEffect(
+  async (body: { refreshToken: string }) => {
+    const response = await axios.post<AuthTokens>(
       '/management-service/shop/admin/refresh-token',
-      { refreshToken },
+      body,
+      {
+        baseURL: API_INSTANCE.defaults.baseURL,
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      },
     );
-    return AccessTokenSchema.parse(data);
+    return AuthTokensSchema.parse(response.data);
   },
 );

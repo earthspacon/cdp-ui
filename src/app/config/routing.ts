@@ -50,11 +50,13 @@ const routesMap = [
     route: routes.login,
     path: '/login',
     view: () => null,
+    // view is defined at app.tsx
   },
   {
     route: routes.signUp,
     path: '/sign-up',
     view: () => null,
+    // view is defined at app.tsx
   },
 ];
 
