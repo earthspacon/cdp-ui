@@ -12,7 +12,7 @@ import {
   toLabelValueArray,
   translitToLatin,
 } from '@/shared/lib/mappers';
-import { notifyError } from '@/shared/lib/notification';
+import { notifyError, notifySuccess } from '@/shared/lib/notification';
 import { LabelValue } from '@/shared/types/utility';
 
 import {
@@ -140,10 +140,20 @@ export const cancelClicked = createEvent();
   });
 }
 
-// Redirect to segments page and reset form on cancel and success
+sample({
+  clock: createSegmentMutation.finished.success,
+  fn: () => ({ message: 'Сегмент успешно создан' }),
+  target: notifySuccess,
+});
+
+// Redirect to segments page and reset form on cancel, success and route closed
 {
   sample({
-    clock: [createSegmentMutation.finished.success, cancelClicked],
+    clock: [
+      createSegmentMutation.finished.success,
+      cancelClicked,
+      routes.createSegment.closed,
+    ],
     target: [routes.segments.open, segmentCreationForm.reset],
   });
 }

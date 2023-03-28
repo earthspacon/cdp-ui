@@ -16,6 +16,12 @@ import { loadIntegrationPageFx } from './lazy-load';
 
 export const PAGE_SIZE = 10;
 
+const historyStatuses = {
+  IN_PROGRESS: 'В процессе',
+  SUCCESS: 'Успешно',
+  FAILED: 'Произошла ошибка',
+};
+
 export type CatalogHistory = ApiCatalogHistory['history'][0] & {
   statusLabel: string;
 };
@@ -174,12 +180,6 @@ const copyTokenFx = attach({
     target: notifySuccess,
   });
 }
-
-const historyStatuses = {
-  IN_PROGRESS: 'В процессе',
-  SUCCESS: 'Успешно',
-  FAILED: 'Произошла ошибка',
-};
 
 function isFileListYml(fileList: FileList | null) {
   return fileList?.[0]?.name?.endsWith('.yml') === true;

@@ -73,7 +73,7 @@ function Actions() {
 
       <LoadingButton
         loading={isSubmitting}
-        disabled={!eachValid}
+        disabled={!eachValid || isSubmitting}
         variant="contained"
         size="large"
         onClick={() => submit()}

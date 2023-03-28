@@ -3,8 +3,8 @@ import { MenuItem, Select } from '@mui/material';
 import { GridActionsCellItem, GridColDef } from '@mui/x-data-grid';
 
 import {
-  orderStatues,
   OrderStatus,
+  orderStatuses,
   orderStatusLabels,
 } from '@/shared/api/status-mappings';
 
@@ -69,7 +69,7 @@ function StatusSelect({ value, onChange }: StatusSelectProps) {
       onChange={(evt) => onChange(evt.target.value as OrderStatus)}
       fullWidth
     >
-      {Object.entries(orderStatues).map(([status, label]) => (
+      {Object.entries(orderStatuses).map(([status, label]) => (
         <MenuItem key={status} value={status}>
           {label}
         </MenuItem>

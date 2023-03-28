@@ -1,6 +1,9 @@
 import type * as Stitches from '@stitches/react';
 import { createStitches } from '@stitches/react';
 
+// I don`t know why but this file (config) slows down IDE intellisense very much
+// so don`t use it for now until intellisense freezing is fixed (by you maybe :) )
+
 export const {
   styled,
   css,

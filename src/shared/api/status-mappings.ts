@@ -51,7 +51,7 @@ export function createSaveStatusMappingsMutation() {
   });
 }
 
-export const orderStatues = {
+export const orderStatuses = {
   NO_STATUS: 'Не задано',
   NEW: 'Новый',
   IN_PROGRESS: 'В работе',
@@ -59,12 +59,12 @@ export const orderStatues = {
   DELIVERED: 'Доставлен',
   CANCEL: 'Отменен',
 };
-export type OrderStatus = keyof typeof orderStatues;
+export type OrderStatus = keyof typeof orderStatuses;
 
 export const orderStatusLabels = Object.fromEntries(
-  Object.entries(orderStatues).map(([key, value]) => [value, key]),
+  Object.entries(orderStatuses).map(([key, value]) => [value, key]),
 ) as Record<string, OrderStatus>;
 
-export const orderStatusOptions = Object.entries(orderStatues).map(
+export const orderStatusOptions = Object.entries(orderStatuses).map(
   ([value, label]) => ({ value, label }),
 ) as LabelValue<OrderStatus>[];
