@@ -3,14 +3,20 @@ import { redirect } from 'atomic-router';
 import { createEffect, createEvent, createStore, sample } from 'effector';
 import { spread } from 'patronum';
 
+import {
+  createSegmentsCustomersCountQuery,
+  createSegmentsListQuery,
+} from '@/shared/api/segments';
 import { routes } from '@/shared/config/routing';
 import { InferStoreValues } from '@/shared/types/utility';
 
-import { segmentsCustomersCountQuery, segmentsListQuery } from '../api';
 import { MappedSegment, mapSegments } from '../lib';
 import { loadSegmentsPageFx } from './lazy-load';
 
 export const PAGE_SIZE = 10;
+
+const segmentsListQuery = createSegmentsListQuery();
+const segmentsCustomersCountQuery = createSegmentsCustomersCountQuery();
 
 type SegmentCustomer = { id: string; loading: boolean; customersCount: number };
 
@@ -37,9 +43,8 @@ const startFetchingCustomersCountFx = createEffect((segmentIds: string[]) => {
 
   sample({
     clock: [loadSegmentsPageFx.done, routes.segments.opened],
-    fn: () => {
-      return;
-    },
+    source: $page,
+    fn: (page) => ({ page, size: PAGE_SIZE }),
     target: segmentsListQuery.start,
   });
 

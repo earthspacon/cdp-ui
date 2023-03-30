@@ -3,10 +3,11 @@ import { zodContract } from '@farfetched/zod';
 import { createEffect } from 'effector';
 import { z } from 'zod';
 
-import { LoyaltyProgramStatusSchema } from '@/shared/api/segments';
-import { StatusSchema } from '@/shared/api/status-mappings';
-import { PaginationParams } from '@/shared/api/types';
 import { API_INSTANCE } from '@/shared/config/api-instance';
+
+import { StatusSchema } from '../status-mappings';
+import { PaginationParams } from '../types';
+import { LoyaltyProgramStatusSchema } from './adapters';
 
 const FromToSchema = z.object({
   fromValue: z.number(),
@@ -63,26 +64,40 @@ export type SegmentsList = z.infer<typeof SegmentsListSchema>;
 export type Segment = SegmentsList['array'][number];
 export type Filters = Segment['filters'];
 
-export const segmentsListQuery = createQuery({
-  effect: createEffect(async (params?: PaginationParams) => {
-    const response = await API_INSTANCE.get<SegmentsList>(
-      '/management-service/segments/configuration',
-      { params },
-    );
-    return response.data;
-  }),
-  contract: zodContract(SegmentsListSchema),
-});
+interface SegmentQueryParams extends PaginationParams {
+  search?: string;
+}
+
+export function createSegmentsListQuery() {
+  return createQuery({
+    effect: createEffect(async (params?: SegmentQueryParams) => {
+      const response = await API_INSTANCE.get<SegmentsList>(
+        '/management-service/segments/configuration',
+        {
+          params: {
+            page: params?.page,
+            size: params?.size,
+            'search-by-name': params?.search,
+          },
+        },
+      );
+      return response.data;
+    }),
+    contract: zodContract(SegmentsListSchema),
+  });
+}
 
 const CustomersCountSchema = z.object({ customersCount: z.number() });
 type CustomersCount = z.infer<typeof CustomersCountSchema>;
 
-export const segmentsCustomersCountQuery = createQuery({
-  effect: createEffect(async (segmentId: string) => {
-    const response = await API_INSTANCE.get<CustomersCount>(
-      `/management-service/segments/${segmentId}/count`,
-    );
-    return response.data;
-  }),
-  contract: zodContract(CustomersCountSchema),
-});
+export function createSegmentsCustomersCountQuery() {
+  return createQuery({
+    effect: createEffect(async (segmentId: string) => {
+      const response = await API_INSTANCE.get<CustomersCount>(
+        `/management-service/segments/${segmentId}/count`,
+      );
+      return response.data;
+    }),
+    contract: zodContract(CustomersCountSchema),
+  });
+}

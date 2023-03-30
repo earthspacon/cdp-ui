@@ -4,7 +4,7 @@ import { z } from 'zod';
 
 import { sessionModel } from '@/entities/session';
 
-import { PasswordSchema } from '@/shared/api/auth';
+import { EmailSchema, PasswordSchema } from '@/shared/api/auth';
 import { createRule } from '@/shared/lib/validation-rules/create-rule';
 
 import { signupMutation } from '../api';
@@ -13,24 +13,11 @@ export const signupForm = createForm({
   fields: {
     email: {
       init: '',
-      rules: [
-        createRule({
-          name: 'email',
-          schema: z
-            .string()
-            .min(1, { message: 'Введите email' })
-            .email('Неверный формат email'),
-        }),
-      ],
+      rules: [createRule({ name: 'email', schema: EmailSchema })],
     },
     password: {
       init: '',
-      rules: [
-        createRule({
-          name: 'password',
-          schema: PasswordSchema,
-        }),
-      ],
+      rules: [createRule({ name: 'password', schema: PasswordSchema })],
     },
     confirmPassword: {
       init: '',

@@ -1,12 +1,12 @@
 import {
+  Filters,
   genderNumberToLabelMapping,
   hasValueBoolToLabelMapping,
   loyaltyProgramStatuses,
+  Segment,
 } from '@/shared/api/segments';
 import { orderStatuses } from '@/shared/api/status-mappings';
 import { LabelValue } from '@/shared/types/utility';
-
-import { Filters, Segment } from './api';
 
 type MappedFilter<Filter> = {
   [filterKey in keyof Filter]: LabelValue<string>;

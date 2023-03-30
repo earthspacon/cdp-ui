@@ -10,18 +10,23 @@ import {
   orderStatuses,
 } from '@/shared/api/status-mappings';
 import { routes } from '@/shared/config/routing';
+import { emptyCallback } from '@/shared/lib/mappers';
 import { notifyError, notifySuccess } from '@/shared/lib/notification';
 
+import {
+  isCdpStatusNotValid,
+  isCdpStatusValid,
+  isExternalStatusNotValid,
+  isExternalStatusValid,
+  noCdpStatusErrorMessage,
+  noExternalStatusErrorMessage,
+  StatusMappings,
+} from '../lib';
 import { loadSettingsPageFx } from './lazy-load';
 
-export type StatusMappings = Omit<
-  ApiStatusMappings['mappings'][0],
-  'cdpStatus'
-> & {
-  id: string;
-  cdpStatus: OrderStatus;
-  cdpStatusLabel: string;
-};
+export const statusMappingsQuery = createStatusMappingsQuery();
+
+export const saveStatusMappingsMutation = createSaveStatusMappingsMutation();
 
 export const $statusMappings = createStore<StatusMappings[]>([]);
 
@@ -38,19 +43,13 @@ export const deleteRowClicked = createEvent<{ id: string }>();
 export const addRowClicked = createEvent();
 export const saveStatusMappingsClicked = createEvent();
 
-export const statusMappingsQuery = createStatusMappingsQuery();
-
-export const saveStatusMappingsMutation = createSaveStatusMappingsMutation();
-
 // Fetching statuses and setting them to the store
 {
   cache(statusMappingsQuery, { staleAfter: '5min' });
 
   sample({
     clock: [loadSettingsPageFx.done, routes.settings.opened],
-    fn() {
-      return;
-    },
+    fn: emptyCallback,
     target: statusMappingsQuery.start,
   });
 
@@ -169,40 +168,3 @@ sample({
   fn: () => ({ message: 'Статусы успешно сохранены' }),
   target: notifySuccess,
 });
-
-function isExternalStatusValid(externalStatus: string) {
-  return externalStatus.trim().length > 0;
-}
-function isCdpStatusValid(cdpStatus: OrderStatus) {
-  return cdpStatus !== 'NO_STATUS';
-}
-
-function isExternalStatusNotValid(mapping: StatusMappings) {
-  const externalStatusValid = isExternalStatusValid(mapping.externalStatus);
-  const cdpStatusValid = isCdpStatusValid(mapping.cdpStatus);
-
-  if (!externalStatusValid && !cdpStatusValid) {
-    return false;
-  }
-
-  if (!externalStatusValid) return true;
-
-  return false;
-}
-function isCdpStatusNotValid(mapping: StatusMappings) {
-  const externalStatusValid = isExternalStatusValid(mapping.externalStatus);
-  const cdpStatusValid = isCdpStatusValid(mapping.cdpStatus);
-
-  if (!externalStatusValid && !cdpStatusValid) {
-    return false;
-  }
-
-  if (!cdpStatusValid) return true;
-
-  return false;
-}
-
-const noCdpStatusErrorMessage =
-  'Для каждого статуса в магазине должен быть задан статус в CDP';
-const noExternalStatusErrorMessage =
-  'Статус в магазине не может быть пустой строкой или содержать одни пробелы';

@@ -48,7 +48,7 @@ export default function LoginPage() {
           <LoadingButton
             variant="contained"
             size="large"
-            sx={{ width: '100%' }}
+            fullWidth
             type="submit"
             disabled={!eachValid || isLoggingIn}
             loading={isLoggingIn}

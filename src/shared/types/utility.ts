@@ -21,3 +21,5 @@ export type InferStoreValues<T> = {
 export type LabelValue<T> = { label: string; value: T };
 
 export type FormDate = Dayjs | null;
+
+export type ValueOf<T> = T[keyof T];

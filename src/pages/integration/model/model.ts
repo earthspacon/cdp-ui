@@ -3,6 +3,7 @@ import { attach, createEvent, createStore, sample } from 'effector';
 import { spread } from 'patronum';
 
 import { routes } from '@/shared/config/routing';
+import { emptyCallback } from '@/shared/lib/mappers';
 import { notifyError, notifySuccess } from '@/shared/lib/notification';
 
 import {
@@ -51,9 +52,7 @@ const copyTokenFx = attach({
 
   sample({
     clock: [loadIntegrationPageFx.done, routes.integration.opened],
-    fn: () => {
-      return;
-    },
+    fn: emptyCallback,
     target: [catalogHistoryQuery.start, getApiTokenQuery.start],
   });
 
@@ -133,9 +132,7 @@ const copyTokenFx = attach({
 
   sample({
     clock: uploadCatalogMutation.finished.success,
-    fn: () => {
-      return;
-    },
+    fn: emptyCallback,
     target: getApiTokenQuery.start,
   });
 

@@ -8,6 +8,7 @@ import {
 } from '@/shared/api/segments';
 import { routes } from '@/shared/config/routing';
 import {
+  emptyCallback,
   filterNullValues,
   toLabelValueArray,
   translitToLatin,
@@ -40,9 +41,7 @@ export const cancelClicked = createEvent();
 {
   sample({
     clock: [loadCreateSegmentPageFx.done, routes.createSegment.opened],
-    fn() {
-      return;
-    },
+    fn: emptyCallback,
     target: loyaltyLevelsQuery.start,
   });
 

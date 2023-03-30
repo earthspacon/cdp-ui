@@ -1,6 +1,7 @@
 import { createMutation, createQuery } from '@farfetched/core';
 import { zodContract } from '@farfetched/zod';
 import { createEffect } from 'effector';
+import { z } from 'zod';
 
 import { API_INSTANCE } from '@/shared/config/api-instance';
 
@@ -28,6 +29,26 @@ export function createSegmentCreationMutation() {
       return response.data;
     },
   });
+}
+
+const CustomersCountSchema = z.object({ customersCount: z.number() });
+type CustomersCount = z.infer<typeof CustomersCountSchema>;
+
+export function createCalcSegmentsDiffFx() {
+  return createEffect(
+    async (
+      params = {
+        includeSegmentIds: [] as string[],
+        excludeSegmentIds: [] as string[],
+      },
+    ) => {
+      const response = await API_INSTANCE.post<CustomersCount>(
+        '/management-service/segments/calc-difference',
+        params,
+      );
+      return CustomersCountSchema.parse(response.data);
+    },
+  );
 }
 
 export interface CreateSegmentBody {

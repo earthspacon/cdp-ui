@@ -55,7 +55,7 @@ export default function SignUpPage() {
           <LoadingButton
             variant="contained"
             size="large"
-            sx={{ width: '100%' }}
+            fullWidth
             type="submit"
             disabled={!eachValid || isSigningUp}
             loading={isSigningUp}

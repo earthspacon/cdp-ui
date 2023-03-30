@@ -69,10 +69,14 @@ export function filterNullValues<T extends object>(
 ): WithFilteredKeys<T, null> | null {
   const filteredObject = Object.fromEntries(
     Object.entries(object).filter(([, value]) => value !== null),
-  ) as T;
+  ) as WithFilteredKeys<T, null>;
 
   if (Object.keys(filteredObject).length === 0) {
     return null;
   }
   return filteredObject;
 }
+
+export const emptyCallback = () => {
+  return;
+};

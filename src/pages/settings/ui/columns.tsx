@@ -8,11 +8,8 @@ import {
   orderStatusLabels,
 } from '@/shared/api/status-mappings';
 
-import {
-  cdpStatusChanged,
-  deleteRowClicked,
-  StatusMappings,
-} from '../model/model';
+import { StatusMappings } from '../lib';
+import { cdpStatusChanged, deleteRowClicked } from '../model/model';
 
 export const columns: GridColDef<StatusMappings>[] = [
   {
@@ -29,7 +26,7 @@ export const columns: GridColDef<StatusMappings>[] = [
     renderCell(params) {
       const id = params.id as string;
       const externalStatus = params.row.externalStatus;
-      const statusValue = orderStatusLabels[params.value];
+      const statusValue = orderStatusLabels[params.row.cdpStatusLabel];
       return (
         <StatusSelect
           value={statusValue}

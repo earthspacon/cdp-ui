@@ -20,3 +20,8 @@ export const PasswordSchema = z
     message: 'Пароль должен содержать хотя бы одну букву',
   })
   .min(8, { message: 'Пароль должен быть не менее 8 символов' });
+
+export const EmailSchema = z
+  .string()
+  .min(1, { message: 'Введите email' })
+  .email('Неверный формат email');

@@ -59,7 +59,7 @@ const retryRequestAfter401Fx = createEffect(
 
 sample({
   clock: logout,
-  target: [$authTokens.reinit!, routes.login.open] as const,
+  target: [$authTokens.reinit!, routes.login.open],
 });
 
 sample({
