@@ -7,15 +7,21 @@ import {
 } from '@/shared/api/segments';
 import { OrderStatus } from '@/shared/api/status-mappings';
 import { createRule } from '@/shared/lib/validation-rules/create-rule';
+import { requiredString } from '@/shared/lib/validation-rules/rules';
 import { FormDate } from '@/shared/types/utility';
 
-import { getRuleToValidateByField, requiredString } from '../lib/validation';
+import { getRuleToValidateByField } from '../lib/validation';
 
 export const segmentCreationForm = createForm({
   fields: {
     segmentName: {
       init: '',
-      rules: [createRule({ name: 'segmentName', schema: requiredString() })],
+      rules: [
+        createRule({
+          name: 'segmentName',
+          schema: requiredString(),
+        }),
+      ],
     },
     email: {
       init: '' as HasValueMappingValue | '',

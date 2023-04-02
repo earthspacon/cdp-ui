@@ -14,6 +14,7 @@ import {
   translitToLatin,
 } from '@/shared/lib/mappers';
 import { notifyError, notifySuccess } from '@/shared/lib/notification';
+import { checkIsStringValid } from '@/shared/lib/validation-rules/rules';
 import { LabelValue } from '@/shared/types/utility';
 
 import {
@@ -24,7 +25,6 @@ import {
   toIsEmptyObject,
   toValuesRange,
 } from '../lib/mappers';
-import { checkIsStringValid } from '../lib/validation';
 import { formFields, segmentCreationForm } from './form';
 import { loadCreateSegmentPageFx } from './lazy-load';
 

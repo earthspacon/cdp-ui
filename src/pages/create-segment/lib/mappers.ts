@@ -8,9 +8,10 @@ import {
   LoyaltyProgramStatus,
 } from '@/shared/api/segments';
 import { OrderStatus } from '@/shared/api/status-mappings';
+import { checkIsStringValid } from '@/shared/lib/validation-rules/rules';
 import { FormDate } from '@/shared/types/utility';
 
-import { checkIsDateValid, checkIsStringValid } from './validation';
+import { checkIsDateValid } from './validation';
 
 export function toIsEmptyObject(emptyValue: HasValueMappingValue | '') {
   const isValueEmpty = emptyValue === '' || emptyValue === 'UNDEFINED';

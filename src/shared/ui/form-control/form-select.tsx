@@ -6,7 +6,7 @@ import {
   Select,
 } from '@mui/material';
 import CircularProgress from '@mui/material/CircularProgress';
-import { ConnectedField } from 'effector-forms';
+import { Field, useField } from 'effector-forms';
 
 import { LabelValue } from '@/shared/types/utility';
 
@@ -21,7 +21,7 @@ type SelectProps = React.ComponentPropsWithoutRef<typeof Select>;
 interface FormSelectProps<T extends Value> {
   label: string;
   options: LabelValue<T>[];
-  field: ConnectedField<T>;
+  field: Field<T>;
   formControlProps?: FormControlProps;
   selectProps?: SelectProps;
   loading?: boolean;
@@ -35,14 +35,16 @@ export function FormSelect<T extends Value>({
   formControlProps,
   selectProps,
 }: FormSelectProps<T>) {
+  const connectedField = useField(field);
+
   return (
-    <FormControl error={field.hasError()} {...formControlProps}>
+    <FormControl error={connectedField.hasError()} {...formControlProps}>
       <InputLabel>{label}</InputLabel>
       <Select
         label={label}
-        value={field.value}
-        onChange={(evt) => field.onChange(evt.target.value as T)}
-        onBlur={() => field.onBlur()}
+        value={connectedField.value}
+        onChange={(evt) => connectedField.onChange(evt.target.value as T)}
+        onBlur={() => connectedField.onBlur()}
         {...selectProps}
       >
         {loading ? (
@@ -59,7 +61,7 @@ export function FormSelect<T extends Value>({
           <NoData />
         )}
       </Select>
-      <FormHelperText>{field.errorText()}</FormHelperText>
+      <FormHelperText>{connectedField.errorText()}</FormHelperText>
     </FormControl>
   );
 }

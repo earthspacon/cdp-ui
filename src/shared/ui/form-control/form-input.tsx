@@ -1,19 +1,21 @@
 import { TextField, TextFieldProps } from '@mui/material';
-import { ConnectedField } from 'effector-forms';
+import { Field, useField } from 'effector-forms';
 
 interface FormInputProps {
-  field: ConnectedField<string>;
+  field: Field<string>;
   textFieldProps?: TextFieldProps;
 }
 
 export function FormInput({ field, textFieldProps }: FormInputProps) {
+  const connectedField = useField(field);
+
   return (
     <TextField
-      value={field.value}
-      onChange={(evt) => field.onChange(evt.target.value)}
-      onBlur={() => field.onBlur()}
-      error={field.hasError()}
-      helperText={field.errorText()}
+      value={connectedField.value}
+      onChange={(evt) => connectedField.onChange(evt.target.value)}
+      onBlur={() => connectedField.onBlur()}
+      error={connectedField.hasError()}
+      helperText={connectedField.errorText()}
       {...textFieldProps}
     />
   );

@@ -4,7 +4,7 @@ import { createBrowserHistory } from 'history';
 
 import { CreateSegmentPage } from '@/pages/create-segment';
 import { IntegrationPage } from '@/pages/integration';
-import { MailingListsPage } from '@/pages/mailing-lists';
+import { MailingsPage } from '@/pages/mailings';
 import { SegmentsPage } from '@/pages/segments';
 import { SettingsPage } from '@/pages/settings';
 
@@ -36,9 +36,9 @@ const routesMap = [
     layout: MainDrawer,
   },
   {
-    route: routes.mailingLists,
-    path: '/mailing-lists',
-    view: MailingListsPage,
+    route: routes.mailings,
+    path: '/mailings',
+    view: MailingsPage,
     layout: MainDrawer,
   },
   {

@@ -4,8 +4,11 @@ import { createForm } from 'effector-forms';
 
 import { sessionModel } from '@/entities/session';
 
-import { EmailSchema, PasswordSchema } from '@/shared/api/auth';
 import { createRule } from '@/shared/lib/validation-rules/create-rule';
+import {
+  EmailSchema,
+  PasswordSchema,
+} from '@/shared/lib/validation-rules/rules';
 
 import { loginMutation } from '../api';
 

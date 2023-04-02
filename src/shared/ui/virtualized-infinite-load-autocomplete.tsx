@@ -21,73 +21,72 @@ import { Centered } from '@/shared/ui/centered';
 
 const LISTBOX_PADDING = 8; // px
 
-type ChildProp = [
-  React.HTMLAttributes<HTMLLIElement>,
-  string,
-  AutocompleteRenderOptionState,
-];
-
-type ListChildProps = ListChildComponentProps<ChildProp[]>;
-
-function getRowElements(props: ListChildProps) {
-  const { data, index, style } = props;
-
-  const dataSet = data[index];
-  console.log(dataSet);
-  const inlineStyle = {
-    ...style,
-    top: (style.top as number) + LISTBOX_PADDING,
-  };
-
-  const LiElem = ({ children }: ChildrenProp) => (
-    <li {...dataSet?.[0]} style={inlineStyle}>
-      {children}
-    </li>
-  );
-
-  return {
-    optionData: dataSet ? dataSet[1] : '',
-    state: dataSet ? dataSet[2] : null,
-    LiElem,
-  };
-}
-
-function renderLoader(props: ListChildProps) {
-  const { LiElem } = getRowElements(props);
-  return (
-    <LiElem>
-      <Centered>
-        <CircularProgress />
-      </Centered>
-    </LiElem>
-  );
-}
-
-function renderCheckboxRow(props: ListChildProps) {
-  const { LiElem, optionData, state } = getRowElements(props);
-  return (
-    <LiElem>
-      <Checkbox checked={state?.selected} />
-      {optionData}
-    </LiElem>
-  );
-}
-
-function renderTextRow(props: ListChildProps) {
-  const { LiElem, optionData } = getRowElements(props);
-  return (
-    <LiElem>
-      <Typography>{optionData}</Typography>
-    </LiElem>
-  );
-}
-
-const OuterElementContext = React.createContext({});
-
-const OuterElementType = React.forwardRef<HTMLDivElement>((props, ref) => {
-  const outerProps = React.useContext(OuterElementContext);
-  return <div ref={ref} {...props} {...outerProps} />;
+const StyledPopper = styled(Popper)({
+  [`& .${autocompleteClasses.listbox}`]: {
+    boxSizing: 'border-box',
+    '& ul': {
+      padding: 0,
+      margin: 0,
+    },
+  },
 });
+
+interface VirtualizedInfiniteLoadAutocompleteProps<
+  T,
+  Multiple extends boolean | undefined,
+  DisableClearable extends boolean | undefined,
+  FreeSolo extends boolean | undefined,
+> extends Omit<
+      AutocompleteProps<T, Multiple, DisableClearable, FreeSolo>,
+      'renderInput' | 'getOptionLabel'
+    >,
+    InfiniteListOptions {
+  inputLabel?: string;
+  getOptionLabel: (option: FreeSolo extends true ? string | T : T) => string;
+}
+
+export function VirtualizedInfiniteLoadAutocomplete<
+  T,
+  Multiple extends boolean | undefined,
+  DisableClearable extends boolean | undefined,
+  FreeSolo extends boolean | undefined,
+>({
+  hasNextPage,
+  isNextPageLoading,
+  itemsLength,
+  loadNextPage,
+  optionElemType,
+  inputLabel,
+  getOptionLabel,
+  ...props
+}: VirtualizedInfiniteLoadAutocompleteProps<
+  T,
+  Multiple,
+  DisableClearable,
+  FreeSolo
+>) {
+  const ListboxComponent = withInfinite({
+    hasNextPage,
+    isNextPageLoading,
+    itemsLength,
+    loadNextPage,
+    optionElemType,
+  });
+
+  return (
+    <Autocomplete
+      {...props}
+      getOptionLabel={getOptionLabel}
+      PopperComponent={StyledPopper}
+      ListboxComponent={ListboxComponent}
+      renderInput={(params) => <TextField {...params} label={inputLabel} />}
+      renderOption={(params, option, state) => {
+        // this will be passed to the ListboxComponent as children
+        return [params, getOptionLabel(option), state] as React.ReactNode;
+      }}
+    />
+  );
+}
 
 interface InfiniteListOptions {
   hasNextPage: boolean;
@@ -96,6 +95,13 @@ interface InfiniteListOptions {
   loadNextPage: () => void;
   optionElemType: 'checkbox' | 'text';
 }
+
+const OuterElementContext = React.createContext({});
+
+const OuterElementType = React.forwardRef<HTMLDivElement>((props, ref) => {
+  const outerProps = React.useContext(OuterElementContext);
+  return <div ref={ref} {...props} {...outerProps} />;
+});
 
 function withInfinite({
   hasNextPage,
@@ -143,14 +149,9 @@ function withInfinite({
                 >
                   {(props) => {
                     if (optionElemType === 'checkbox') {
-                      console.log('checkbox', isNextPageLoading);
-                      if (isNextPageLoading) {
-                        console.log('isNextPageLoading');
-                        return renderLoader(props);
-                      }
-                      return renderCheckboxRow(props);
+                      return renderCheckboxRow({ props, isItemLoaded });
                     }
-                    return renderTextRow(props);
+                    return renderTextRow({ props, isItemLoaded });
                   }}
                 </FixedSizeList>
               )}
@@ -162,69 +163,83 @@ function withInfinite({
   );
 }
 
-const StyledPopper = styled(Popper)({
-  [`& .${autocompleteClasses.listbox}`]: {
-    boxSizing: 'border-box',
-    '& ul': {
-      padding: 0,
-      margin: 0,
-    },
-  },
-});
+type ChildProp =
+  | [React.HTMLAttributes<HTMLLIElement>, string, AutocompleteRenderOptionState]
+  | undefined;
 
-interface VirtualizedInfiniteLoadAutocompleteProps<
-  T,
-  Multiple extends boolean | undefined,
-  DisableClearable extends boolean | undefined,
-  FreeSolo extends boolean | undefined,
-> extends Omit<
-      AutocompleteProps<T, Multiple, DisableClearable, FreeSolo>,
-      'renderInput' | 'getOptionLabel'
-    >,
-    InfiniteListOptions {
-  inputLabel?: string;
-  getOptionLabel: (option: T) => string;
+type ListChildProps = ListChildComponentProps<ChildProp[]>;
+
+function getRowElements(props: ListChildProps) {
+  const { data, index, style } = props;
+
+  const dataSet = data?.[index];
+  const inlineStyle = {
+    ...style,
+    top: (style.top as number) + LISTBOX_PADDING,
+  };
+  const liProps = dataSet?.[0] ?? {};
+
+  const LiElem = ({ children }: ChildrenProp) => (
+    <li {...liProps} style={inlineStyle}>
+      {children}
+    </li>
+  );
+
+  return {
+    optionData: dataSet?.[1] ?? '',
+    state: dataSet?.[2] ?? null,
+    LiElem,
+    index,
+  };
 }
 
-export function VirtualizedInfiniteLoadAutocomplete<
-  T,
-  Multiple extends boolean | undefined,
-  DisableClearable extends boolean | undefined,
-  FreeSolo extends boolean | undefined,
->({
-  hasNextPage,
-  isNextPageLoading,
-  itemsLength,
-  loadNextPage,
-  optionElemType,
-  inputLabel,
-  getOptionLabel,
-  ...props
-}: VirtualizedInfiniteLoadAutocompleteProps<
-  T,
-  Multiple,
-  DisableClearable,
-  FreeSolo
->) {
-  const ListboxComponent = withInfinite({
-    hasNextPage,
-    isNextPageLoading,
-    itemsLength,
-    loadNextPage,
-    optionElemType,
-  });
+function renderCheckboxRow({
+  props,
+  isItemLoaded,
+}: {
+  props: ListChildProps;
+  isItemLoaded: (index: number) => boolean;
+}) {
+  const { LiElem, optionData, state, index } = getRowElements(props);
 
-  return (
-    <Autocomplete
-      {...props}
-      getOptionLabel={getOptionLabel as (option: T | string) => string}
-      PopperComponent={StyledPopper}
-      ListboxComponent={ListboxComponent}
-      renderInput={(params) => <TextField {...params} label={inputLabel} />}
-      renderOption={(params, option, state) => {
-        console.log({ option });
-        return [params, getOptionLabel(option), state] as React.ReactNode;
-      }}
-    />
-  );
+  let content;
+  if (!isItemLoaded(index)) {
+    content = (
+      <Centered>
+        <CircularProgress />
+      </Centered>
+    );
+  } else {
+    content = (
+      <>
+        <Checkbox checked={state?.selected} />
+        {optionData}
+      </>
+    );
+  }
+
+  return <LiElem>{content}</LiElem>;
+}
+
+function renderTextRow({
+  props,
+  isItemLoaded,
+}: {
+  props: ListChildProps;
+  isItemLoaded: (index: number) => boolean;
+}) {
+  const { LiElem, optionData, index } = getRowElements(props);
+
+  let content;
+  if (!isItemLoaded(index)) {
+    content = (
+      <Centered>
+        <CircularProgress />
+      </Centered>
+    );
+  } else {
+    content = <Typography>{optionData}</Typography>;
+  }
+
+  return <LiElem>{content}</LiElem>;
 }

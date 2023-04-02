@@ -1,6 +1,6 @@
 import { Button, Stack, TextField, Typography } from '@mui/material';
 import { styled } from '@stitches/react';
-import { useField, useForm } from 'effector-forms';
+import { useForm } from 'effector-forms';
 import { useUnit } from 'effector-react';
 
 import {
@@ -85,13 +85,12 @@ function Actions() {
 }
 
 function SegmentNameInputs() {
-  const segmentNameField = useField(formFields.segmentName);
   const segmentCode = useUnit($segmentCode);
 
   return (
     <Stack spacing={2} width="45%">
       <FormInput
-        field={segmentNameField}
+        field={formFields.segmentName}
         textFieldProps={{ label: 'Название сегмента' }}
       />
       <TextField
@@ -104,27 +103,25 @@ function SegmentNameInputs() {
 }
 
 function BuyersInputs() {
-  const emailField = useField(segmentCreationForm.fields.email);
-  const genderField = useField(segmentCreationForm.fields.gender);
-  const phoneNumberField = useField(segmentCreationForm.fields.phoneNumber);
-  const birthDateFromField = useField(segmentCreationForm.fields.birthDateFrom);
-  const birthDateToField = useField(segmentCreationForm.fields.birthDateTo);
-
   return (
     <FilterWrapper title="Покупатели">
       <Stack spacing={5.5} direction="row">
         <Stack spacing={2} {...inputsWidthProp}>
           <FormSelect
-            field={emailField}
+            field={formFields.email}
             label="Email"
             options={hasValueOptions}
           />
-          <FormSelect field={genderField} label="Пол" options={genderOptions} />
+          <FormSelect
+            field={formFields.gender}
+            label="Пол"
+            options={genderOptions}
+          />
         </Stack>
 
         <Stack spacing={2}>
           <FormSelect
-            field={phoneNumberField}
+            field={formFields.phoneNumber}
             label="Номер телефона"
             options={hasValueOptions}
             formControlProps={{ sx: inputsWidthProp }}
@@ -132,7 +129,7 @@ function BuyersInputs() {
 
           <Stack spacing={2} direction="row" alignItems="baseline">
             <FormDatePicker
-              field={birthDateFromField}
+              field={formFields.birthDateFrom}
               label="Дата рождения (от)"
               format={dateFormat}
               sx={inputsWidthProp}
@@ -142,7 +139,7 @@ function BuyersInputs() {
             <Typography>—</Typography>
 
             <FormDatePicker
-              field={birthDateToField}
+              field={formFields.birthDateTo}
               label="Дата рождения (до)"
               format={dateFormat}
               sx={inputsWidthProp}
@@ -156,21 +153,13 @@ function BuyersInputs() {
 }
 
 function OrdersInputs() {
-  const ordersNumberFromField = useField(formFields.ordersNumberFrom);
-  const ordersNumberToField = useField(formFields.ordersNumberTo);
-  const ordersTotalFromField = useField(formFields.ordersTotalFrom);
-  const ordersTotalToField = useField(formFields.ordersTotalTo);
-  const ordersStatusField = useField(formFields.ordersStatus);
-  const purchaseDateRangeFrom = useField(formFields.purchaseDateRangeFrom);
-  const purchaseDateRangeTo = useField(formFields.purchaseDateRangeTo);
-
   return (
     <FilterWrapper title="Заказы">
       <Stack spacing={5.5} direction="row">
         <Stack spacing={2}>
           <Stack spacing={2} direction="row" alignItems="baseline">
             <FormInput
-              field={ordersNumberFromField}
+              field={formFields.ordersNumberFrom}
               textFieldProps={{
                 label: 'Количество заказов (от)',
                 type: 'number',
@@ -181,7 +170,7 @@ function OrdersInputs() {
             <Typography>—</Typography>
 
             <FormInput
-              field={ordersNumberToField}
+              field={formFields.ordersNumberTo}
               textFieldProps={{
                 label: 'Количество заказов (до)',
                 type: 'number',
@@ -192,7 +181,7 @@ function OrdersInputs() {
 
           <Stack spacing={2} direction="row" alignItems="baseline">
             <FormInput
-              field={ordersTotalFromField}
+              field={formFields.ordersTotalFrom}
               textFieldProps={{
                 label: 'Сумма заказов (от)',
                 type: 'number',
@@ -203,7 +192,7 @@ function OrdersInputs() {
             <Typography>—</Typography>
 
             <FormInput
-              field={ordersTotalToField}
+              field={formFields.ordersTotalTo}
               textFieldProps={{
                 label: 'Сумма заказов (до)',
                 type: 'number',
@@ -216,7 +205,7 @@ function OrdersInputs() {
         <Stack spacing={2}>
           <Stack spacing={2} direction="row" alignItems="baseline">
             <FormDatePicker
-              field={purchaseDateRangeFrom}
+              field={formFields.purchaseDateRangeFrom}
               label="Диапазон дат (от)"
               format={dateFormat}
               sx={inputsWidthProp}
@@ -225,7 +214,7 @@ function OrdersInputs() {
             <Typography>—</Typography>
 
             <FormDatePicker
-              field={purchaseDateRangeTo}
+              field={formFields.purchaseDateRangeTo}
               label="Диапазон дат (до)"
               format={dateFormat}
               sx={inputsWidthProp}
@@ -233,7 +222,7 @@ function OrdersInputs() {
           </Stack>
 
           <FormSelect
-            field={ordersStatusField}
+            field={formFields.ordersStatus}
             label="Статус заказов"
             options={orderStatusOptions}
             formControlProps={{ sx: inputsWidthProp }}
@@ -245,11 +234,6 @@ function OrdersInputs() {
 }
 
 function LoyaltyProgramInputs() {
-  const loyaltyProgramLevelField = useField(formFields.loyaltyProgramLevel);
-  const loyaltyProgramStatusField = useField(formFields.loyaltyProgramStatus);
-  const bonusesBalanceFromField = useField(formFields.bonusesBalanceFrom);
-  const bonusesBalanceToField = useField(formFields.bonusesBalanceTo);
-
   const { isLoyaltyLevelsLoading, loyaltyLevelOptions } = useUnit({
     isLoyaltyLevelsLoading: loyaltyLevelsQuery.$pending,
     loyaltyLevelOptions: $loyaltyLevelOptions,
@@ -260,13 +244,13 @@ function LoyaltyProgramInputs() {
       <Stack spacing={5.5} direction="row">
         <Stack spacing={2} width="320px">
           <FormSelect
-            field={loyaltyProgramLevelField}
+            field={formFields.loyaltyProgramLevel}
             label="Уровень в программе лояльности"
             options={loyaltyLevelOptions}
             loading={isLoyaltyLevelsLoading}
           />
           <FormSelect
-            field={loyaltyProgramStatusField}
+            field={formFields.loyaltyProgramStatus}
             label="Статус в программе лояльности"
             options={loyaltyProgramStatusOptions}
           />
@@ -275,7 +259,7 @@ function LoyaltyProgramInputs() {
         <Stack>
           <Stack spacing={2} direction="row" alignItems="baseline">
             <FormInput
-              field={bonusesBalanceFromField}
+              field={formFields.bonusesBalanceFrom}
               textFieldProps={{
                 label: 'Баланс бонусов (от)',
                 type: 'number',
@@ -286,7 +270,7 @@ function LoyaltyProgramInputs() {
             <Typography>—</Typography>
 
             <FormInput
-              field={bonusesBalanceToField}
+              field={formFields.bonusesBalanceTo}
               textFieldProps={{
                 label: 'Баланс бонусов (до)',
                 type: 'number',

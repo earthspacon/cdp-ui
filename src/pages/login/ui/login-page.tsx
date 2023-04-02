@@ -14,7 +14,7 @@ import { $loginErrors, loginForm } from '../model/model';
 
 // eslint-disable-next-line import/no-default-export
 export default function LoginPage() {
-  const { fields, submit, eachValid } = useForm(loginForm);
+  const { submit, eachValid } = useForm(loginForm);
   const isLoggingIn = useUnit(loginMutation.$pending);
   const loginErrors = useUnit($loginErrors);
 
@@ -28,11 +28,11 @@ export default function LoginPage() {
       <LoginWrapper onSubmit={onSubmit}>
         <InputsWrapper>
           <FormInput
-            field={fields.email}
+            field={loginForm.fields.email}
             textFieldProps={{ label: 'Email', type: 'email' }}
           />
           <FormInput
-            field={fields.password}
+            field={loginForm.fields.password}
             textFieldProps={{ label: 'Пароль', type: 'password' }}
           />
 

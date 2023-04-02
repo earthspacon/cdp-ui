@@ -6,4 +6,10 @@ export const STRIPO_ELEMENTS_IDS = {
   settingsContainer: 'stripo-settings-container',
   previewContainer: 'stripo-preview-container',
   codeEditor: 'stripo-code-editor',
+  stripoScript: 'stripo-script',
 };
+
+export const STRIPO_PLUGIN_SCRIPT_URL =
+  'https://plugins.stripo.email/static/latest/stripo.js';
+export const STRIPO_PLUGIN_BACKEND_URL =
+  'https://plugins.stripo.email/api/v1/auth';

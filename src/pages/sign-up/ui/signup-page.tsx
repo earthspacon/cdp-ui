@@ -12,7 +12,7 @@ import { signupForm } from '../model/model';
 
 // eslint-disable-next-line import/no-default-export
 export default function SignUpPage() {
-  const { fields, submit, eachValid } = useForm(signupForm);
+  const { submit, eachValid } = useForm(signupForm);
   const { isSigningUp, isSignupFailed } = useUnit({
     isSigningUp: signupMutation.$pending,
     isSignupFailed: signupMutation.$failed,
@@ -28,19 +28,19 @@ export default function SignUpPage() {
       <LoginWrapper onSubmit={onSubmit}>
         <InputsWrapper>
           <FormInput
-            field={fields.email}
+            field={signupForm.fields.email}
             textFieldProps={{ label: 'Email', type: 'email' }}
           />
           <FormInput
-            field={fields.password}
+            field={signupForm.fields.password}
             textFieldProps={{ label: 'Пароль', type: 'password' }}
           />
           <FormInput
-            field={fields.confirmPassword}
+            field={signupForm.fields.confirmPassword}
             textFieldProps={{ label: 'Повторите пароль', type: 'password' }}
           />
           <FormInput
-            field={fields.shopUrl}
+            field={signupForm.fields.shopUrl}
             textFieldProps={{ label: 'Адрес сайта магазина' }}
           />
 

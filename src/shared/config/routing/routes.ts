@@ -8,6 +8,6 @@ export const routes = {
   integration: createRoute(),
   segments: createRoute(),
   createSegment: createRoute(),
-  mailingLists: createRoute(),
+  mailings: createRoute(),
   settings: createRoute(),
 };
