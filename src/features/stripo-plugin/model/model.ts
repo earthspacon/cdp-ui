@@ -48,10 +48,6 @@ export function createStripoPluginEditorModel() {
   });
 
   const resetStripoFx = createEffect(() => {
-    console.log(window.StripoApi, 'window.StripoApi');
-    window.StripoApi = null;
-    window.Stripo = null;
-
     const stripoScript = document.getElementById(
       STRIPO_ELEMENTS_IDS.stripoScript,
     );
