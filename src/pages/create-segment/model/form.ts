@@ -10,7 +10,10 @@ import { createRule } from '@/shared/lib/validation-rules/create-rule';
 import { requiredString } from '@/shared/lib/validation-rules/rules';
 import { FormDate } from '@/shared/types/utility';
 
-import { getRuleToValidateByField } from '../lib/validation';
+import {
+  getRuleForNumberField,
+  getRuleToValidateByField,
+} from '../lib/validation';
 
 export const segmentCreationForm = createForm({
   fields: {
@@ -55,8 +58,9 @@ export const segmentCreationForm = createForm({
 
     ordersNumberFrom: {
       init: '',
-      rules(_, form) {
-        return getRuleToValidateByField({
+      rules(value, form) {
+        return getRuleForNumberField({
+          value,
           field: form.ordersNumberTo,
           name: 'ordersNumberFrom',
           type: 'string',

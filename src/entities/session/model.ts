@@ -1,3 +1,9 @@
+import {
+  chainRoute,
+  RouteInstance,
+  RouteParams,
+  RouteParamsAndQuery,
+} from 'atomic-router';
 import { AxiosError, AxiosResponse } from 'axios';
 import {
   attach,
@@ -92,6 +98,23 @@ export function checkSession({ event }: { event: Event<void> }) {
     clock: event,
     filter: and($isNotAuthPage, not($isAuthorized)),
     target: logout,
+  });
+}
+
+export function chainAuthorized<Params extends RouteParams>(
+  route: RouteInstance<Params>,
+) {
+  const sessionCheckStarted = createEvent<RouteParamsAndQuery<Params>>();
+
+  const alreadyAuthorized = sample({
+    clock: sessionCheckStarted,
+    filter: $isAuthorized,
+  });
+
+  return chainRoute({
+    route,
+    beforeOpen: sessionCheckStarted,
+    openOn: [alreadyAuthorized, getRefreshTokenFx.done],
   });
 }
 

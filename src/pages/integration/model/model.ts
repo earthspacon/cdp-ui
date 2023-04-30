@@ -2,6 +2,8 @@ import { cache, update } from '@farfetched/core';
 import { attach, createEvent, createStore, sample } from 'effector';
 import { spread } from 'patronum';
 
+import { chainAuthorized } from '@/entities/session/model';
+
 import { routes } from '@/shared/config/routing';
 import { emptyCallback } from '@/shared/lib/mappers';
 import { notifyError, notifySuccess } from '@/shared/lib/notification';
@@ -27,6 +29,8 @@ export type CatalogHistory = ApiCatalogHistory['history'][0] & {
   statusLabel: string;
 };
 
+const authorizedRoute = chainAuthorized(routes.integration);
+
 export const $catalogHistory = createStore<CatalogHistory[]>([]);
 export const $catalogHistoryTotalCount = createStore(0);
 export const $apiToken = createStore('');
@@ -51,7 +55,7 @@ const copyTokenFx = attach({
   cache(catalogHistoryQuery, { staleAfter: '5min' });
 
   sample({
-    clock: [loadIntegrationPageFx.done, routes.integration.opened],
+    clock: [loadIntegrationPageFx.done, authorizedRoute.opened],
     fn: emptyCallback,
     target: [catalogHistoryQuery.start, getApiTokenQuery.start],
   });

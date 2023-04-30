@@ -8,6 +8,32 @@ import {
   requiredText,
 } from '@/shared/lib/validation-rules/rules';
 
+export function getRuleForNumberField<Value>({
+  value,
+  field,
+  name,
+  type,
+}: {
+  value: Value;
+  field: Value;
+  name: string;
+  type: 'string' | 'date';
+}) {
+  if (Number(value) < 0) {
+    return [
+      {
+        name: 'ordersNumberFrom',
+        validator: () => ({
+          isValid: false,
+          errorText: 'Значение не может быть отрицательным',
+        }),
+      },
+    ];
+  }
+
+  return getRuleToValidateByField({ field, name, type });
+}
+
 export function getRuleToValidateByField<Value>({
   field,
   name,
